@@ -242,12 +242,14 @@ export const scaffoldHostConfigFile = (
 	return {
 		path: 'libs/mcp-server/src/lib/shared/host-config.ts',
 		content: `import {
-	DEFAULT_PATH_LAYOUT,
 	buildScaffoldToolRegistration,
 	createWorkspacePathProvider,
 } from '@cartago-git/mcp-core/public';
 import type { IMcpCoreHostConfig } from '@cartago-git/mcp-core/public';
 
+// The core is project-agnostic. Add domain behaviour (e.g. a proposal
+// workflow) by loading a plugin via the mcp-core CLI
+// (\`mcp-core --plugins=proposals\`) rather than wiring it here.
 export const buildHostConfig = (): IMcpCoreHostConfig => {
 	const workspace = createWorkspacePathProvider(process.cwd());
 	return {
@@ -258,27 +260,6 @@ export const buildHostConfig = (): IMcpCoreHostConfig => {
 		},
 		namespacePrefix: '${prefix}',
 		workspace,
-		pathLayout: DEFAULT_PATH_LAYOUT,
-		proposalStore: {
-			families: [
-				{ prefix: 'f', description: 'fixes (highest priority)' },
-				{ prefix: 'p', description: 'proposals' },
-			],
-			familyCascade: ['f', 'p'],
-			folders: { historical: 'historical', fixes: 'fixes' },
-		},
-		closeMarkers: {
-			markers: [
-				{ kind: 'done', marker: '🟩 [DONE]', requiresReason: false },
-				{ kind: 'cap', marker: '🟨 [CAP]', requiresReason: true },
-				{ kind: 'blocked', marker: '🟥 [BLOCKED]', requiresReason: true },
-			],
-			maxLineLength: 120,
-		},
-		modelRouting: {
-			defaultModel: '${options.defaultModel ?? 'MiniMax-M3 (customendpoint)'}',
-			routes: [],
-		},
 		validationMatrix: { scopes: {} },
 		extraTools: [
 			// Your project tools register here. The scaffold tool lets
@@ -356,3 +337,151 @@ export const scaffoldHostProject = (
 		`Closed stack and conventions of ${options.projectName}.`
 	),
 ];
+
+// ---------------------------------------------------------------------------
+// Plugin generator — "mcp-core knows how to create plugins"
+// ---------------------------------------------------------------------------
+
+export interface IScaffoldPluginOptions {
+	/** Plugin id, also the tool namespace and cache dir, e.g. `pepegrillo`. */
+	readonly pluginName: string;
+	/** One-line, model-agnostic description of what the plugin adds. */
+	readonly description: string;
+	/** npm scope for the package name (default `@cartago-git`). */
+	readonly scope?: string;
+}
+
+/**
+ * Generate a ready-to-load plugin package implementing `IMcpPlugin`.
+ * The result is loadable with `mcp-core --plugins=<pluginName>` once
+ * published or linked. Tools are namespaced by the plugin name and
+ * return structured JSON so any agent/model can consume them.
+ */
+export const scaffoldPluginFiles = (
+	options: IScaffoldPluginOptions
+): readonly IScaffoldedFile[] => {
+	const id = kebab(options.pluginName);
+	const scope = options.scope ?? '@cartago-git';
+	const pkg = `${scope}/mcp-${id}`;
+	const fn = pascal(id);
+	const safeDescription = options.description.replace(/'/g, '');
+	return [
+		{
+			path: `plugins/${id}/package.json`,
+			content: `${JSON.stringify(
+				{
+					name: pkg,
+					version: '0.1.0',
+					type: 'module',
+					description: safeDescription,
+					license: 'MIT',
+					main: './src/index.ts',
+					exports: { '.': './src/index.ts' },
+					peerDependencies: { '@cartago-git/mcp-core': '^0.1.0' },
+					dependencies: {
+						'@modelcontextprotocol/sdk': '^1.29.0',
+						zod: '^4.4.3',
+					},
+				},
+				null,
+				'\t'
+			)}\n`,
+		},
+		{
+			path: `plugins/${id}/src/index.ts`,
+			content: `import { definePlugin } from '@cartago-git/mcp-core/public';
+import { z } from 'zod';
+
+/**
+ * ${safeDescription}
+ *
+ * Loaded with \`mcp-core --plugins=${id}\`. Every tool is namespaced by
+ * the plugin name and returns structured JSON so any agent or model
+ * can consume it deterministically.
+ */
+export default definePlugin({
+	name: '${id}',
+	version: '0.1.0',
+	describe: '${safeDescription}',
+	register(ctx) {
+		const prefix = ctx.namespacePrefix; // defaults to '${id}'
+		return {
+			tools: [
+				{
+					id: '${id}_ping',
+					register: async (server) => {
+						server.registerTool(
+							\`\${prefix}_ping\`,
+							{
+								description:
+									'Health check for the ${id} plugin; echoes its resolved paths.',
+								inputSchema: z.object({}),
+							},
+							async () => ({
+								content: [
+									{
+										type: 'text' as const,
+										text: JSON.stringify(
+											{
+												plugin: '${id}',
+												cacheDir: ctx.pluginCacheDir,
+												docsDir: ctx.pluginDocsDir,
+											},
+											null,
+											'\\t'
+										),
+									},
+								],
+							})
+						);
+					},
+				},
+			],
+			knowledge: [
+				{
+					id: '${id}-overview',
+					title: '${fn} plugin',
+					body: '${safeDescription}',
+				},
+			],
+		};
+	},
+});
+`,
+		},
+		{
+			path: `plugins/${id}/tsconfig.json`,
+			content: `${JSON.stringify(
+				{
+					extends: '../../tsconfig.base.json',
+					include: ['src/**/*', 'tests/**/*'],
+				},
+				null,
+				'\t'
+			)}\n`,
+		},
+		{
+			path: `plugins/${id}/README.md`,
+			content: `# ${pkg}
+
+${safeDescription}
+
+## Use
+
+\`\`\`jsonc
+// .vscode/mcp.json
+{
+	"servers": {
+		"mcp-core": {
+			"command": "bunx",
+			"args": ["@cartago-git/mcp-core", "--plugins=${id}"]
+		}
+	}
+}
+\`\`\`
+
+See \`PLUGINS-MCP-CORE.md\` at the repo root for the full plugin guide.
+`,
+		},
+	];
+};

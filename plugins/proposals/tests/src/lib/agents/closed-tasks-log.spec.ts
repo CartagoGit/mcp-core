@@ -21,8 +21,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	appendToClosedTasks,
 	readClosedTasks,
-} from '@cartago-git/mcp-swarm/lib/agents/closed-tasks-log';
-import type { IClosedTaskRecord } from '@cartago-git/mcp-swarm/lib/agents/closed-tasks-log';
+} from '@cartago-git/mcp-proposals/lib/agents/closed-tasks-log';
+import type { IClosedTaskRecord } from '@cartago-git/mcp-proposals/lib/agents/closed-tasks-log';
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -14,6 +14,7 @@ import type { IToolRegistration } from '../contracts/interfaces/tool-registratio
 import {
 	scaffoldAgentFile,
 	scaffoldHostProject,
+	scaffoldPluginFiles,
 	scaffoldPromptFile,
 	scaffoldSkillFile,
 	scaffoldToolFile,
@@ -34,7 +35,7 @@ export interface IScaffoldToolOptions {
 
 export const SCAFFOLD_INPUT_SCHEMA = z.object({
 	kind: z
-		.enum(['tool', 'prompt', 'skill', 'agent', 'host'])
+		.enum(['tool', 'prompt', 'skill', 'agent', 'host', 'plugin'])
 		.describe('What to generate.'),
 	name: z
 		.string()
@@ -133,6 +134,14 @@ export const buildScaffoldReport = (
 			break;
 		case 'host':
 			files = scaffoldHostProject(hostOptions);
+			break;
+		case 'plugin':
+			if (name.length === 0) errors.push('kind "plugin" requires name');
+			else
+				files = scaffoldPluginFiles({
+					pluginName: name,
+					description,
+				});
 			break;
 	}
 

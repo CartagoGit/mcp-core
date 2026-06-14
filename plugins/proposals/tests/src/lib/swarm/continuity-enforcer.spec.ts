@@ -19,9 +19,9 @@ import { describe, expect, it } from 'vitest';
 import {
 	enforceContinuity,
 	ORCHESTRATOR_DEFAULT_POLICY,
-} from '@cartago-git/mcp-swarm/lib/swarm/continuity-enforcer';
-import type { IEnforceDecisionLike } from '@cartago-git/mcp-swarm/lib/swarm/continuity-enforcer';
-import type { IContinuityPolicy } from '@cartago-git/mcp-swarm/lib/swarm/swarm-types';
+} from '@cartago-git/mcp-proposals/lib/swarm/continuity-enforcer';
+import type { IEnforceDecisionLike } from '@cartago-git/mcp-proposals/lib/swarm/continuity-enforcer';
+import type { IContinuityPolicy } from '@cartago-git/mcp-proposals/lib/swarm/swarm-types';
 
 const baseDecision: IEnforceDecisionLike = {
 	layer: 'chat-context',

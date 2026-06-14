@@ -1,0 +1,31 @@
+{
+	"name": "@cartago-git/mcp-core",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Project-agnostic MCP server core: deterministic tool registration, workspace path resolution, a CLI plugin loader (--plugins), meta-scaffolding (tools/prompts/skills/agents/plugins) and a hybrid project analyzer that recommends what an MCP server needs. No project-specific code.",
+	"author": "Cartago",
+	"license": "MIT",
+	"keywords": ["mcp", "model-context-protocol", "agent", "ai", "cartago", "plugin"],
+	"main": "./src/index.ts",
+	"bin": {
+		"mcp-core": "./src/cli.ts"
+	},
+	"exports": {
+		".": "./src/index.ts",
+		"./public": "./src/public/index.ts",
+		"./lib/*": "./src/lib/*.ts"
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"typescript": "^6.0.3",
+		"vitest": "^4.1.8"
+	}
+}

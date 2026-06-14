@@ -1,0 +1,40 @@
+import { describe, expect, it } from 'vitest';
+
+import {
+	DEFAULT_PATH_LAYOUT,
+	buildSwarmPaths,
+} from '@cartago-git/mcp-proposals/lib/contracts/constants/default-path-layout.constant';
+
+describe('buildSwarmPaths', () => {
+	it('roots every cache artefact under the given cacheDir', () => {
+		const layout = buildSwarmPaths('.cache/x/swarm', 'docs/x');
+		expect(layout.lockFile).toBe('.cache/x/swarm/agents.lock.json');
+		expect(layout.taskQueueFile).toBe('.cache/x/swarm/agent-queue/queue.json');
+		expect(layout.scratchDir).toBe('.cache/x/swarm');
+	});
+
+	it('roots human-edited proposals under the given docsDir', () => {
+		const layout = buildSwarmPaths('.cache/x/swarm', 'docs/x');
+		expect(layout.proposalsDir).toBe('docs/x/proposals');
+		expect(layout.proposalIndexFile).toBe('docs/x/proposals/index.json');
+	});
+});
+
+describe('DEFAULT_PATH_LAYOUT', () => {
+	it('defaults cache under .cache/mcp-core/swarm and docs under docs/mcp-core', () => {
+		expect(DEFAULT_PATH_LAYOUT.scratchDir).toBe('.cache/mcp-core/swarm');
+		expect(DEFAULT_PATH_LAYOUT.lockFile).toBe(
+			'.cache/mcp-core/swarm/agents.lock.json'
+		);
+		expect(DEFAULT_PATH_LAYOUT.proposalsDir).toBe('docs/mcp-core/proposals');
+	});
+
+	it('keeps every artefact inside the scratch or proposals dirs', () => {
+		const { proposalsDir, scratchDir, ...artefacts } = DEFAULT_PATH_LAYOUT;
+		for (const value of Object.values(artefacts)) {
+			const inScratch = value.startsWith(`${scratchDir}/`);
+			const inProposals = value.startsWith(`${proposalsDir}/`);
+			expect(inScratch || inProposals).toBe(true);
+		}
+	});
+});

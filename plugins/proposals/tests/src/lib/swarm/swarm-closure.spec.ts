@@ -15,22 +15,22 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { runSwarmClosure } from '@cartago-git/mcp-swarm/lib/swarm/swarm-closure';
+import { runSwarmClosure } from '@cartago-git/mcp-proposals/lib/swarm/swarm-closure';
 import type {
 	ICloseSwarmInput,
 	ISubagentTreeSummary,
-} from '@cartago-git/mcp-swarm/lib/swarm/swarm-closure';
+} from '@cartago-git/mcp-proposals/lib/swarm/swarm-closure';
 import type {
 	IContinuityPolicy,
 	ISwarmBudget,
-} from '@cartago-git/mcp-swarm/lib/swarm/swarm-types';
+} from '@cartago-git/mcp-proposals/lib/swarm/swarm-types';
 import type {
 	IBudgetViolation,
 	IObservedUsage,
 	IProposalBudget,
-} from '@cartago-git/mcp-swarm/lib/proposals/proposal-budget';
-import type { IObservedContinuity } from '@cartago-git/mcp-swarm/lib/swarm/continuity-policy';
-import type { ILockSnapshot } from '@cartago-git/mcp-swarm/lib/swarm/swarm-closure';
+} from '@cartago-git/mcp-proposals/lib/proposals/proposal-budget';
+import type { IObservedContinuity } from '@cartago-git/mcp-proposals/lib/swarm/continuity-policy';
+import type { ILockSnapshot } from '@cartago-git/mcp-proposals/lib/swarm/swarm-closure';
 
 // ---------------------------------------------------------------------------
 // Test fixtures

@@ -1,0 +1,21 @@
+{
+	"name": "@cartago-git/mcp-core-monorepo",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"description": "Project-agnostic MCP server core + CLI plugin loader. Publishes @cartago-git/mcp-core and its plugins.",
+	"author": "Cartago",
+	"license": "MIT",
+	"workspaces": ["packages/*", "plugins/*"],
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"validate": "bun run typecheck && bun run test"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"@types/node": "^20.11.0",
+		"typescript": "^6.0.3",
+		"vitest": "^4.1.8"
+	}
+}

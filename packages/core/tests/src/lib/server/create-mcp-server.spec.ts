@@ -5,7 +5,6 @@ import {
 	planRegistrationOrder,
 } from '@cartago-git/mcp-core/lib/server/create-mcp-server';
 import { createWorkspacePathProvider } from '@cartago-git/mcp-core/lib/workspace/create-workspace-path-provider';
-import { DEFAULT_PATH_LAYOUT } from '@cartago-git/mcp-core/lib/contracts/constants/default-path-layout.constant';
 import type { IMcpCoreHostConfig } from '@cartago-git/mcp-core/lib/contracts/interfaces/host-config.interface';
 import type { IToolRegistration } from '@cartago-git/mcp-core/lib/contracts/interfaces/tool-registration.interface';
 
@@ -31,17 +30,6 @@ const hostConfig = (
 	},
 	namespacePrefix: 'spec',
 	workspace: createWorkspacePathProvider('/tmp/spec-workspace'),
-	pathLayout: DEFAULT_PATH_LAYOUT,
-	proposalStore: {
-		families: [{ prefix: 'p', description: 'proposals' }],
-		familyCascade: ['p'],
-		folders: { historical: 'historical' },
-	},
-	closeMarkers: {
-		markers: [{ kind: 'done', marker: '🟩 [DONE]', requiresReason: false }],
-		maxLineLength: 120,
-	},
-	modelRouting: { defaultModel: 'spec-model', routes: [] },
 	validationMatrix: { scopes: {} },
 	extraTools,
 });

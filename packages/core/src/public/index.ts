@@ -1,35 +1,32 @@
 /**
  * Public surface of `@cartago-git/mcp-core`. This barrel is the ONLY
- * stable import surface of the package (same policy as
- * `@affairs/engine/public`). Everything else under `src/lib` is
+ * stable import surface of the package. Everything under `src/lib` is
  * internal and may change without notice.
+ *
+ * The core is project-agnostic and knows nothing about proposals,
+ * swarms or any domain. Domain behaviour ships as plugins loaded by
+ * the CLI (`mcp-core --plugins=...`) that implement `IMcpPlugin`.
  */
+
+// --- server assembly -------------------------------------------------------
 export {
 	coreToolRegistrations,
 	createMcpServer,
 	planRegistrationOrder,
 } from '../lib/server/create-mcp-server';
 export type { IMcpCoreServer } from '../lib/server/create-mcp-server';
+
+// --- workspace + paths -----------------------------------------------------
 export { createWorkspacePathProvider } from '../lib/workspace/create-workspace-path-provider';
-export { DEFAULT_PATH_LAYOUT } from '../lib/contracts/constants/default-path-layout.constant';
+export type { IWorkspacePathProvider } from '../lib/contracts/interfaces/workspace-paths.interface';
+export {
+	DEFAULT_CORE_PATHS,
+} from '../lib/contracts/interfaces/core-paths.interface';
+export type { ICorePaths } from '../lib/contracts/interfaces/core-paths.interface';
+
+// --- contracts -------------------------------------------------------------
 export type { IMcpCoreHostConfig } from '../lib/contracts/interfaces/host-config.interface';
 export type { IMcpCoreServerMetadata } from '../lib/contracts/interfaces/server-metadata.interface';
-export type {
-	IHostPathLayout,
-	IWorkspacePathProvider,
-} from '../lib/contracts/interfaces/workspace-paths.interface';
-export type {
-	IProposalFamily,
-	IProposalStoreConfig,
-} from '../lib/contracts/interfaces/proposal-store.interface';
-export type {
-	ICloseMarker,
-	ICloseMarkerSet,
-} from '../lib/contracts/interfaces/close-markers.interface';
-export type {
-	IModelRoute,
-	IModelRoutingTable,
-} from '../lib/contracts/interfaces/model-routing.interface';
 export type { IStatusCollector } from '../lib/contracts/interfaces/status-collector.interface';
 export type {
 	IPromptRegistration,
@@ -45,12 +42,28 @@ export type {
 	ISkillEntry,
 } from '../lib/contracts/interfaces/knowledge.interface';
 
-// p97 — host scaffolding kit ("tools to create tools").
+// --- plugin system ---------------------------------------------------------
+export { definePlugin } from '../lib/plugins/plugin-contract';
+export type {
+	IMcpPlugin,
+	IMcpPluginContext,
+	IMcpPluginRegistrations,
+} from '../lib/plugins/plugin-contract';
+export {
+	loadPlugins,
+	resolvePluginSpecifier,
+} from '../lib/plugins/load-plugins';
+export type { ILoadedPlugin, IPluginLoadResult } from '../lib/plugins/load-plugins';
+export { parseCliArgs, DEFAULT_CLI_ARGS } from '../lib/plugins/parse-cli-args';
+export type { IMcpCoreCliArgs } from '../lib/plugins/parse-cli-args';
+
+// --- scaffolding kit ("tools to create tools/plugins") ---------------------
 export {
 	scaffoldAgentFile,
 	scaffoldHostConfigFile,
 	scaffoldHostProject,
 	scaffoldInstructionsFile,
+	scaffoldPluginFiles,
 	scaffoldPromptFile,
 	scaffoldServerEntryFiles,
 	scaffoldSkillFile,
@@ -59,6 +72,7 @@ export {
 export type {
 	IScaffoldAgentSlot,
 	IScaffoldHostOptions,
+	IScaffoldPluginOptions,
 	IScaffoldedFile,
 } from '../lib/scaffold/scaffold-host';
 export {
@@ -71,3 +85,18 @@ export type {
 	IScaffoldReport,
 	IScaffoldToolOptions,
 } from '../lib/scaffold/scaffold-tool';
+
+// --- hybrid project analyzer (bootstrap) -----------------------------------
+export {
+	analyzeProject,
+	recommendServerPlan,
+	PROJECT_PATTERN_CATALOG,
+	buildBootstrapToolRegistrations,
+} from '../lib/bootstrap/index';
+export type {
+	IProjectAnalysis,
+	IServerPlan,
+	IProjectPattern,
+	IFileReader,
+	IBootstrapToolOptions,
+} from '../lib/bootstrap/index';

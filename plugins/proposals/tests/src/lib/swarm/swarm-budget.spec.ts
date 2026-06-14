@@ -17,8 +17,8 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { ProposalParseError } from '@cartago-git/mcp-swarm/lib/proposals/proposal-errors';
-import { parseSwarmFrontmatter } from '@cartago-git/mcp-swarm/lib/swarm/swarm-parser';
+import { ProposalParseError } from '@cartago-git/mcp-proposals/lib/proposals/proposal-errors';
+import { parseSwarmFrontmatter } from '@cartago-git/mcp-proposals/lib/swarm/swarm-parser';
 
 let workdir: string;
 

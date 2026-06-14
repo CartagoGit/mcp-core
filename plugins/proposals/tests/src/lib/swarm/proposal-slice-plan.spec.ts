@@ -5,7 +5,7 @@ import {
 	parseProposalSlicePlan,
 	planDisjointnessIssues,
 	validateClaim,
-} from '@cartago-git/mcp-swarm/lib/swarm/proposal-slice-plan';
+} from '@cartago-git/mcp-proposals/lib/swarm/proposal-slice-plan';
 
 const DOC = `---
 id: pX

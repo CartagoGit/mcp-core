@@ -7,15 +7,15 @@ import {
 	classifyZombies,
 	gcZombies,
 	thresholdFromOrphans,
-} from '@cartago-git/mcp-swarm/lib/agents/zombie-reconcile';
+} from '@cartago-git/mcp-proposals/lib/agents/zombie-reconcile';
 import type {
 	ISubagentSlot,
 	IZombieOrphanEntry,
 	IZombieReconcileReport,
 	IZombieThreshold,
-} from '@cartago-git/mcp-swarm/lib/agents/zombie-reconcile';
-import { createSubagentRegistryStore } from '@cartago-git/mcp-swarm/lib/shared/subagent-registry-store';
-import type { ISubagentRegistry } from '@cartago-git/mcp-swarm/lib/shared/subagent-registry-store';
+} from '@cartago-git/mcp-proposals/lib/agents/zombie-reconcile';
+import { createSubagentRegistryStore } from '@cartago-git/mcp-proposals/lib/shared/subagent-registry-store';
+import type { ISubagentRegistry } from '@cartago-git/mcp-proposals/lib/shared/subagent-registry-store';
 
 const TEMP_DIRS: string[] = [];
 

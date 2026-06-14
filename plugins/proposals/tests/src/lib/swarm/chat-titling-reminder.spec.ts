@@ -45,8 +45,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { buildChatTitlingReminder } from '@cartago-git/mcp-swarm/lib/swarm/chat-titling-reminder';
-import type { IChatTitlingReminderInput } from '@cartago-git/mcp-swarm/lib/swarm/chat-titling-reminder';
+import { buildChatTitlingReminder } from '@cartago-git/mcp-proposals/lib/swarm/chat-titling-reminder';
+import type { IChatTitlingReminderInput } from '@cartago-git/mcp-proposals/lib/swarm/chat-titling-reminder';
 
 // ---------------------------------------------------------------------------
 // Helpers

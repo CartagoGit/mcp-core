@@ -1,0 +1,36 @@
+import { resolve } from 'node:path';
+import type { Alias } from 'vitest/config';
+
+/**
+ * Shared module aliases so specs can import via the public package
+ * specifiers (`@cartago-git/mcp-core/...`, `@cartago-git/mcp-proposals/...`)
+ * without a tsconfig-paths plugin. Mirrors `tsconfig.base.json` paths.
+ * Order matters: more specific subpaths must come before the bare name.
+ */
+export const workspaceAliases = (workspaceRoot: string): Alias[] => {
+	const core = resolve(workspaceRoot, 'packages/core/src');
+	const proposals = resolve(workspaceRoot, 'plugins/proposals/src');
+	return [
+		{
+			find: '@cartago-git/mcp-core/public',
+			replacement: resolve(core, 'public/index.ts'),
+		},
+		{
+			find: /^@cartago-git\/mcp-core\/lib\/(.*)$/,
+			replacement: resolve(core, 'lib') + '/$1',
+		},
+		{ find: '@cartago-git/mcp-core', replacement: resolve(core, 'index.ts') },
+		{
+			find: '@cartago-git/mcp-proposals/public',
+			replacement: resolve(proposals, 'public/index.ts'),
+		},
+		{
+			find: /^@cartago-git\/mcp-proposals\/lib\/(.*)$/,
+			replacement: resolve(proposals, 'lib') + '/$1',
+		},
+		{
+			find: '@cartago-git/mcp-proposals',
+			replacement: resolve(proposals, 'index.ts'),
+		},
+	];
+};

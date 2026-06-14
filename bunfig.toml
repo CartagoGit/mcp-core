@@ -1,0 +1,6 @@
+[install]
+hoist = ["vitest", "typescript", "@types/bun", "@types/node", "zod", "@modelcontextprotocol/sdk"]
+
+[test]
+runner = "bun"
+coverage = false
