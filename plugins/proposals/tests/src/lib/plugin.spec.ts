@@ -1,0 +1,63 @@
+import { describe, expect, it } from 'vitest';
+
+import type { IMcpPluginContext } from '@cartago-git/mcp-core/public';
+
+import plugin from '@cartago-git/mcp-proposals';
+
+const ctx = (): IMcpPluginContext => ({
+	workspace: {
+		root: '/ws',
+		resolve: (relativePath: string) => `/ws/${relativePath}`,
+	},
+	corePaths: { cacheDir: '.cache/mcp-core', docsDir: 'docs/mcp-core' },
+	cacheDir: '.cache/mcp-core',
+	docsDir: 'docs/mcp-core',
+	pluginCacheDir: '.cache/mcp-core/proposals',
+	pluginDocsDir: 'docs/mcp-core/proposals',
+	namespacePrefix: 'proposals',
+	args: {},
+});
+
+describe('@cartago-git/mcp-proposals plugin', () => {
+	it('exposes a valid IMcpPlugin identity', () => {
+		expect(plugin.name).toBe('proposals');
+		expect(typeof plugin.register).toBe('function');
+	});
+
+	it('registers the proposal workflow tools and knowledge', async () => {
+		const registrations = await plugin.register(ctx());
+		expect(registrations.tools?.map((tool) => tool.id)).toEqual([
+			'agent_lock',
+			'task_queue',
+			'sync_proposals',
+			'get_proposal_workflow',
+		]);
+		expect(registrations.knowledge?.[0]?.id).toBe('proposals-workflow');
+	});
+
+	it('namespaces tool registration by the context prefix', async () => {
+		const names: string[] = [];
+		const fakeServer = {
+			registerTool: (name: string) => {
+				names.push(name);
+			},
+		} as unknown as Parameters<
+			NonNullable<
+				Awaited<ReturnType<typeof plugin.register>>['tools']
+			>[number]['register']
+		>[0];
+		const registrations = await plugin.register({
+			...ctx(),
+			namespacePrefix: 'work',
+		});
+		for (const tool of registrations.tools ?? []) {
+			await tool.register(fakeServer);
+		}
+		expect(names).toEqual([
+			'work_agent_lock',
+			'work_task_queue',
+			'work_sync_proposals',
+			'work_get_proposal_workflow',
+		]);
+	});
+});

@@ -1,0 +1,44 @@
+import type { IToolRegistration } from '@cartago-git/mcp-core/public';
+
+import { buildProposalWorkflow } from '../knowledge/proposal-workflow';
+
+export interface IGetProposalWorkflowToolOptions {
+	readonly namespacePrefix: string;
+	readonly proposalsDir: string;
+	readonly indexFile: string;
+}
+
+/**
+ * Returns the proposal workflow (families, locations, naming, rules,
+ * template) as structured JSON. Read-only; an agent calls it once to
+ * learn how this project's proposals work.
+ */
+export const buildGetProposalWorkflowRegistration = (
+	options: IGetProposalWorkflowToolOptions
+): IToolRegistration => ({
+	id: 'get_proposal_workflow',
+	register: async (server) => {
+		server.registerTool(
+			`${options.namespacePrefix}_get_proposal_workflow`,
+			{
+				description:
+					'Returns the proposal workflow as structured JSON: families and cascade priority, file locations, naming, rules and the canonical markdown template. Read-only.',
+			},
+			async () => ({
+				content: [
+					{
+						type: 'text' as const,
+						text: JSON.stringify(
+							buildProposalWorkflow(
+								options.proposalsDir,
+								options.indexFile
+							),
+							null,
+							'\t'
+						),
+					},
+				],
+			})
+		);
+	},
+});
