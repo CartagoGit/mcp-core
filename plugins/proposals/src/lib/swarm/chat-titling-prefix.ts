@@ -1,12 +1,12 @@
 /**
  * chat-titling-prefix.ts
  *
- * Parser for the first prompt of an Affairs orchestrator chat.
+ * Parser for the first prompt of an the host project orchestrator chat.
  *
- * Background (p41, Capa 1 — "Convención de prompt"):
+ * Background:
  *   VS Code Copilot derives each chat's title from the first message sent
  *   to the model. The today/archived sidebar in the Copilot panel shows
- *   that title; without a stable convention, Affairs sessions appear as
+ *   that title; without a stable convention, the host project sessions appear as
  *   ad-hoc fragments ("¿qué…", "Tarea:…") and become impossible to
  *   distinguish without opening the chat.
  *
@@ -104,9 +104,9 @@ export interface IChatTitlingPrefixResult {
 //     `PROPOSAL_FULL` so we can apply the length cap before the first
 //     `:` independently of the summary text.
 //
-//     Bracket content: a `p` or `g` followed by one or more digits,
+//     Bracket content: a family letter followed by one or more digits,
 //     optionally followed by `-` and one or more alphanumerics.
-//       p22, p40c, p34b, g0, p22-tortuga
+//       e.g. p12, f3, p12-add-login
 //     We intentionally forbid:
 //       - leading zeros ("p022") — to keep the prefix predictable.
 //       - uppercase ("P22") — the convention is lowercase.

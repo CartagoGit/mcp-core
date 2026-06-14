@@ -23,7 +23,7 @@
  *
  * Contract (this spec locks):
  *   1. The block always opens with the heading
- *      `## Rename chat session reminder (p41)`.
+ *      `## Rename chat session reminder`.
  *   2. The block always contains a sentence naming the technical
  *      limitation: the literal substring "no `workbench.action.chat.rename`"
  *      must appear.
@@ -77,9 +77,9 @@ const makeReport = (
 // ---------------------------------------------------------------------------
 
 describe('buildChatTitlingReminder — heading and technical limitation', () => {
-	it('renders the canonical heading "## Rename chat session reminder (p41)"', () => {
+	it('renders the canonical heading "## Rename chat session reminder"', () => {
 		const reminder = buildChatTitlingReminder(makeReport());
-		expect(reminder).toContain('## Rename chat session reminder (p41)');
+		expect(reminder).toContain('## Rename chat session reminder');
 	});
 
 	it('documents the technical limitation by mentioning "no `workbench.action.chat.rename`"', () => {
@@ -152,7 +152,7 @@ describe('buildChatTitlingReminder — proposal-bound rendering', () => {
 			})
 		);
 		expect(reminder).toContain('[p41] T2: rename');
-		expect(reminder).toContain('## Rename chat session reminder (p41)');
+		expect(reminder).toContain('## Rename chat session reminder');
 	});
 
 	it('does NOT render the [FREE] branch when a proposalId is present', () => {

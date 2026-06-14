@@ -2,7 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 /**
  * A unit of the deterministic registration sequence. Registration
- * order is semantically load-bearing (see p40c in the Affairs host),
+ * order is semantically load-bearing,
  * so it is expressed as data and planned by `planRegistrationOrder`
  * instead of being implicit in call order.
  */

@@ -4,8 +4,8 @@
  * Append-only log of closed tasks, stored at .cache/agent-queue/closed-tasks.json.
  * FIFO eviction at 32 entries (oldest discarded).
  *
- * p40c T1 step 5: original cap was 256 entries.
- * p56 T2: cap reduced from 256 to 32 — for enjambres of 2-4 agents the
+ * original cap was 256 entries.
+ * cap reduced from 256 to 32 — for enjambres of 2-4 agents the
  * log is only consulted for tail diagnostics, so a 32-entry window
  * (the most recent 32 closed tasks) is more than enough. Smaller cap
  * also keeps the file well under 8 KB so the periodic `report()` can

@@ -1,4 +1,4 @@
-// p97 — host scaffolding kit: "tools to create tools". A project that
+// host scaffolding kit: "tools to create tools". A project that
 // imports mcp-core calls these generators (directly or through the
 // `<prefix>_scaffold` MCP tool) to create its OWN MCP server,
 // orchestrator and subagent adapters, instructions file, tools,

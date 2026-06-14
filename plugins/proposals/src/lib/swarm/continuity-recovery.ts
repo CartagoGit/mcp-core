@@ -8,7 +8,7 @@
  * `isStaleTimestamp`, `isStaleLock`, `shouldResetFromCheckpoint` and the
  * `CONTINUITY_STALE_WINDOW_MS` / `CONTINUITY_REPEAT_RESET_THRESHOLD`
  * constants). This module re-exports those primitives so callers that need
- * continuity-aware decisions (e.g. the `affairs-continue-proposal` prompt)
+ * continuity-aware decisions (e.g. the `the continue-proposal flow` prompt)
  * can import from a single place, and adds the prompt-only helpers
  * `extractTaskHint` / `extractCheckpointNextTaskHint` plus a structured
  * `evaluateContinuityRecovery` decision API.
@@ -68,7 +68,7 @@ export interface IContinuityLockLike {
 export interface IContinuityCheckpointLike {
 	// The cascade compares the checkpoint owner against the current
 	// proposal before deciding `resume` vs `next`, so `proposalId`
-	// remains part of the structural contract after the p40 T2
+	// remains part of the structural contract
 	// extraction to `continuity-recovery.ts`.
 	readonly proposalId?: string;
 	readonly status?: string;
@@ -139,7 +139,7 @@ export function extractCheckpointNextTaskHint(
  * intentionally narrow: this function does NOT inspect chat context, the
  * proposal index, or the `requestedMode` for resume/next semantics — those
  * remain the responsibility of the cascade in
- * `affairs-continue-proposal.prompt.ts`.
+ * `the continue-proposal logic`.
  */
 export function evaluateContinuityRecovery(input: {
 	readonly lock?: IContinuityLockLike | undefined;

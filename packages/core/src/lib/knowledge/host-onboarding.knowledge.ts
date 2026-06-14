@@ -2,7 +2,7 @@ import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interfac
 
 /**
  * How a NEW project adopts mcp-core. This is the npm-readiness doc
- * (p88 T4): everything a host must provide lives in
+ *: everything a host must provide lives in
  * `IMcpCoreHostConfig`; nothing project-specific hides inside the
  * framework.
  */

@@ -1,7 +1,7 @@
 /**
  * proposal-budget.ts
  *
- * Runtime budget enforcement for Affairs proposals.
+ * Runtime budget enforcement for the host project proposals.
  *
  * `validateBudget(budget, observed)` compares declared limits against actual
  * observed usage and returns a structured result with per-field violations.
@@ -10,7 +10,7 @@
  *   block — hard limit; delivery_verifier must reject the slice.
  *   warn  — soft limit; operator should investigate but close is not blocked.
  *
- * Current policy (informed by the p34 proposal):
+ * Current policy (informed by the original proposal):
  *   - iterations, premiumCalls → 'block'
  *   - inputTokens, outputTokens, toolCalls → 'warn'
  *     (token limits are declared, not measurable from inside the workspace)

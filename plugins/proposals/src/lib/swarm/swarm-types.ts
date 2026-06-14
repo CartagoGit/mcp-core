@@ -1,9 +1,9 @@
 /**
  * swarm-types.ts
  *
- * Type definitions for the Agent Swarm Governor (p34b).
+ * Type definitions for the Agent Swarm Governor.
  *
- * - ISwarmBudget: per-session limits (complementary to IProposalBudget from p34)
+ * - ISwarmBudget: per-session limits (complementary to IProposalBudget the original design)
  * - IContinuityPolicy: declarative policy for session continuity
  * - ISwarmProposalExtension: merged extension returned by parseSwarmFrontmatter
  * - IContinuityViolation: a single policy violation
@@ -25,7 +25,7 @@ export interface ISwarmBudget {
 	readonly maxCoreDocRereadsPerSession?: number;
 	/**
 	 * Declared maximum token budget per turn.
-	 * Informational only — not measured from within the workspace (see p34b Non-Goals).
+	 * Informational only — not measured from within the workspace (the original design Non-Goals).
 	 */
 	readonly maxTurnTokens?: number;
 }

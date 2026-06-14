@@ -1,7 +1,7 @@
 /**
  * round-context.ts
  *
- * IRoundContextDigest + helpers for the Agent Swarm Governor (p34b T2).
+ * IRoundContextDigest + helpers for the Agent Swarm Governor.
  *
  * The round-context digest is a small JSON document published at
  * `.cache/round-context.digest.json` that captures a stable view of the
@@ -13,7 +13,7 @@
  *
  * This module is filesystem-aware (atomic .tmp + rename for the digest,
  * SHA-256 truncated to 8 bytes for the core docs) and contains no MCP
- * server wiring — that lives in `affairs-round-context-get.tool.ts`.
+ * server wiring — that lives in `the round-context tool`.
  *
  * Hashing choice: we use `node:crypto.createHash('sha256')` truncated
  * to the first 8 bytes (16 hex chars) and prefixed with `rh-`. The
@@ -51,11 +51,11 @@ import type { IYamlValue } from '../proposals/frontmatter-parser';
  * - `README.md` — top-level workspace README.
  * - `docs/proposals/index.json` — proposal registry.
  * - `.github/copilot-instructions.md` — root Copilot instructions.
- * - `libs/mcp-server/src/lib/skills/affairs-proposal-workflow.md` — the
+ * - `the proposal-workflow knowledge` — the
  *   proposal workflow skill (the doc subagents consult to understand
  *   proposal governance).
  */
-// p97 — the default doc set is HOST-AGNOSTIC (workspace README +
+// the default doc set is HOST-AGNOSTIC (workspace README +
 // proposal index). Hosts inject their full list (instructions files,
 // skill docs…) through the `coreDocs` parameter of
 // `computeCoreDocHashes`.
@@ -342,7 +342,7 @@ const scanLiveProposalEntries = (
 ): IScannedProposalEntry[] => {
 	const roots = [
 		join(monorepoRoot, DEFAULT_PATH_LAYOUT.proposalsDir),
-		// TODO(p86): the paused-demos subfolder is host folder policy;
+		// TODO: the paused-demos subfolder is host folder policy;
 		// inject it via IProposalStoreConfig.folders when tools migrate.
 		join(monorepoRoot, DEFAULT_PATH_LAYOUT.proposalsDir, 'paused/demos'),
 	];
@@ -793,8 +793,8 @@ const formatRapidHash = (hexBytes: string): string => `rh-${hexBytes}`;
  */
 export const computeCoreDocHashes = (
 	monorepoRoot: string,
-	// p86 — the doc list is host policy; the default keeps the
-	// historical Affairs set for compatibility, hosts may inject
+	// the doc list is host policy; the default keeps the
+	// historical the host project set for compatibility, hosts may inject
 	// their own (e.g. extra skill docs).
 	coreDocs: readonly string[] = CORE_DOCS
 ): Record<string, string> => {

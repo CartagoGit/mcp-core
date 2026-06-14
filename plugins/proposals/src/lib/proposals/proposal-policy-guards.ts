@@ -9,8 +9,8 @@
  * spawn subprocesses, read environment variables, or call
  * `process.cwd()`. Closed key sets are `as const` arrays (no enums).
  *
- * Moved from the Affairs host knowledge
- * (`affairs-proposal-budget-policy.knowledge.ts`, a3 T3) in p84: the
+ * Moved from the host project knowledge
+ * (the proposal-budget policy): the
  * guards are framework mechanics, not host policy content.
  */
 

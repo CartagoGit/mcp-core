@@ -91,9 +91,18 @@ never crashes the server.
 analyze_project   →   review/edit the plan   →   create_server   →   you write the files   →   register in mcp.json
 ```
 
-## Programmatic use
+## Use as a library — the escape hatch (`bun i`)
+
+Everything is reusable **without** the MCP/CLI path. Install the package and
+import the building blocks directly — server assembly, the project analyzer,
+the scaffolder, and (from the proposals plugin) the engines and tool builders.
+
+```bash
+bun i @cartago-git/mcp-core @cartago-git/mcp-proposals
+```
 
 ```ts
+// 1) Assemble your own server in code:
 import { createMcpServer, createWorkspacePathProvider } from '@cartago-git/mcp-core/public';
 
 const assembled = await createMcpServer({
@@ -103,7 +112,28 @@ const assembled = await createMcpServer({
 	extraTools: [/* your IToolRegistration[] */],
 });
 await assembled.start(); // stdio
+
+// 2) Run the analyzer / recommender as plain functions:
+import { analyzeProject, recommendServerPlan } from '@cartago-git/mcp-core/public';
+const analysis = analyzeProject(myFileReader);
+const plan = recommendServerPlan(analysis);
+
+// 3) Reuse a plugin's tool builders and engines directly:
+import {
+	buildAgentLockRegistration,
+	runContinueProposal,
+	buildSwarmPaths,
+} from '@cartago-git/mcp-proposals/public';
 ```
+
+Two stable import surfaces per package:
+
+- **`<pkg>/public`** — the curated, stable API (recommended).
+- **`<pkg>/lib/*`** — deep internal modules (engines, helpers) for advanced
+  reuse; less stable across versions.
+
+So the same code that powers the MCP server is callable as an ordinary library
+from any other repo.
 
 ## Packages in this repo
 

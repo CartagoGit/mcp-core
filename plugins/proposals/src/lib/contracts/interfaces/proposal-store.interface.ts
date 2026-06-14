@@ -1,5 +1,5 @@
 /**
- * A proposal family is a namespace of work units (in Affairs:
+ * A proposal family is a namespace of work units (in the host project:
  * `f` fixes, `a` audits, `p` proposals, `g` games). mcp-core only
  * knows the mechanics; the host supplies the actual families.
  */

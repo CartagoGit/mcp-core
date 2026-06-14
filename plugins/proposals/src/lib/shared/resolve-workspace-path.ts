@@ -6,7 +6,7 @@
  * back to the cwd.
  *
  * Extracted from the original inline helper in
- * `affairs-agent-lock.tool.ts` so the new tool and the CLI script can
+ * `the agent-lock tool` so the new tool and the CLI script can
  * share the same logic.
  */
 

@@ -1,17 +1,17 @@
 /**
  * chat-titling-reminder.ts
  *
- * Fallback path for p41 T3: render a markdown reminder that the user
+ * Fallback path: render a markdown reminder that the user
  * must rename their chat session manually because the orchestrator
  * cannot perform the rename programmatically on this build.
  *
- * Background (p41, T2 + T3 — Capa 2, "Rename programático"):
+ * Background:
  *   T2 (technical_investigator) confirmed that
  *   `workbench.action.chat.rename` is **not** registered in VS Code
  *   1.123 / Copilot Chat 0.43. The T3 *integrate* branch is therefore
  *   dead on arrival and the T3 *fallback* branch is active: the gate
  *   must emit a visible reminder block that tells the user how to
- *   apply the p41 prefix convention to the current chat session by
+ *   apply the prefix convention to the current chat session by
  *   hand.
  *
  *   The block is a pure-data string with no executable content; it is
@@ -30,8 +30,8 @@
  * Relationship with the rest of the project:
  *   - `libs/mcp-server/src/lib/swarm/chat-titling-prefix.ts` (T1)
  *   - `libs/mcp-server/src/lib/agents/agent-closure-report.ts`
- *     (consumed by `affairs_self_review_gate`).
- *   - `libs/mcp-server/src/lib/tools/affairs-self-review-gate.tool.ts`
+ *     (consumed by `<prefix>_self_review_gate`).
+ *   - the host self-review gate tool
  *     (concatenates the output of this helper to the gate's response).
  */
 
@@ -57,7 +57,7 @@ import {
  * that context on the report (filled in by the orchestrator that
  * generated the report) so the reminder can be precise.
  *
- *   - `proposalId`: e.g. "p41", "p40c". When `null` or `undefined`,
+ *   - `proposalId`: e.g. "p12", "f3". When `null` or `undefined`,
  *     the `[FREE]` branch is rendered.
  *   - `taskId`:     e.g. "T1", "T2.3". Ignored when `proposalId` is
  *     missing.
@@ -91,7 +91,7 @@ export type IChatTitlingReminderInput = Omit<
 // ---------------------------------------------------------------------------
 
 /**
- * Renders the p41 fallback reminder block as a markdown string.
+ * Renders the fallback reminder block as a markdown string.
  *
  * Branches:
  *   - If the report has a non-empty `proposalId`:
@@ -105,7 +105,7 @@ export type IChatTitlingReminderInput = Omit<
  *       Renders the `[FREE] <short summary>` branch only.
  *
  * The output always:
- *   - Opens with `## Rename chat session reminder (p41)`.
+ *   - Opens with `## Rename chat session reminder`.
  *   - Mentions the technical limitation
  *     "no `workbench.action.chat.rename`".
  *   - Tells the user how to perform the rename manually
@@ -121,7 +121,7 @@ export function buildChatTitlingReminder(
 	const taskId = normaliseOptionalString(report.taskId);
 	const summary = normaliseOptionalString(report.summary);
 
-	const heading = '## Rename chat session reminder (p41)';
+	const heading = '## Rename chat session reminder';
 	const capNote = `The prefix must fit in ${CHAT_TITLING_PREFIX_MAX_LENGTH} characters to avoid truncation.`;
 
 	if (proposalId !== null) {
@@ -206,7 +206,7 @@ function normaliseOptionalString(value: unknown): string | null {
  * The reminder template renders `[<proposalId>] T<taskId>: <summary>`,
  * i.e. the literal `T` is hard-coded. If the caller already supplied
  * a `taskId` that includes the leading `T` (e.g. `"T2"`), we strip
- * it to avoid the double-letter `[p41] TT2: ...`.
+ * it to avoid the double-letter `[p12] TT2: ...`.
  *
  * This helper is a no-op when the value does not start with `T`,
  * which keeps the function safe for free-form or malformed input.

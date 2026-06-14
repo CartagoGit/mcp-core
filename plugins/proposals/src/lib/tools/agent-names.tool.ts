@@ -1,0 +1,418 @@
+import { z } from 'zod';
+
+import type { IToolRegistration } from '@cartago-git/mcp-core/public';
+
+import {
+	enqueue,
+	parseQueue,
+	persistQueue,
+} from '../agents/persistent-task-queue';
+import { gcZombies } from '../agents/zombie-reconcile';
+import {
+	SUBAGENT_CANONICAL_ROLES,
+	SUBAGENT_CONVENTIONS,
+} from '../shared/subagent-conventions';
+import type { ISubagentCanonicalRole } from '../shared/subagent-conventions';
+import { createSubagentRegistryStore } from '../shared/subagent-registry-store';
+import type { ISubagentAssignment } from '../shared/subagent-registry-store';
+import { buildSubagentTree } from '../shared/subagent-tree';
+import { DEFAULT_AGENT_NAME_POOL, pickFromPool } from '../knowledge/agent-name-pool';
+
+export interface IAgentNamesToolOptions {
+	readonly namespacePrefix: string;
+	/** Resolved absolute paths the registry and its sidecars live at. */
+	readonly registryPathAbs: string;
+	readonly lockPathAbs: string;
+	readonly queuePathAbs: string;
+	readonly closedTasksPathAbs: string;
+	/** Symbolic name pool (defaults to the constellation pool). */
+	readonly pool?: readonly string[];
+}
+
+export interface IAgentNamesArgs {
+	readonly action:
+		| 'assign'
+		| 'release'
+		| 'heartbeat'
+		| 'list'
+		| 'tree'
+		| 'who_uses'
+		| 'gc'
+		| 'reconcile';
+	readonly task_id?: string | undefined;
+	readonly agent?: string | undefined;
+	readonly agent_slot?: string | undefined;
+	readonly parent_task_id?: string | null | undefined;
+	readonly topic?: string | undefined;
+	readonly now?: string | undefined;
+	readonly dry_run?: boolean | undefined;
+	readonly stale_after_minutes?: number | undefined;
+}
+
+type IResult = {
+	content: Array<{ type: 'text'; text: string }>;
+	isError?: boolean;
+};
+
+const json = (value: unknown, isError = false): IResult => ({
+	content: [{ type: 'text', text: JSON.stringify(value, null, '\t') }],
+	...(isError ? { isError: true } : {}),
+});
+
+const isCanonicalRole = (value: string): value is ISubagentCanonicalRole =>
+	(SUBAGENT_CANONICAL_ROLES as readonly string[]).includes(value);
+
+const activeNames = (assignments: readonly ISubagentAssignment[]): Set<string> =>
+	new Set(
+		assignments.filter((a) => a.status === 'active').map((a) => a.agent_name)
+	);
+
+const cooldownNames = (
+	assignments: readonly ISubagentAssignment[],
+	atIso: string
+): Set<string> =>
+	new Set(
+		assignments
+			.filter(
+				(a) =>
+					a.status === 'cooldown' &&
+					a.cooldown_until !== null &&
+					a.cooldown_until > atIso
+			)
+			.map((a) => a.agent_name)
+	);
+
+/**
+ * Agent name registry for the WHOLE agent tree — the root orchestrator
+ * (slot `orchestrator`, depth 0, no parent) included, not only
+ * subagents. Actions: assign / release / heartbeat / list / tree /
+ * who_uses / gc / reconcile. Thin orchestration over the (tested)
+ * registry-store, tree, zombie-gc and queue engines.
+ */
+export const runAgentNames = async (
+	args: IAgentNamesArgs,
+	options: IAgentNamesToolOptions
+): Promise<IResult> => {
+	const store = createSubagentRegistryStore(options.registryPathAbs);
+	const pool = options.pool ?? DEFAULT_AGENT_NAME_POOL;
+	const poolNames = new Set(pool);
+	const at = args.now ?? new Date().toISOString();
+
+	const emitQueueEvent = async (taskId: string, priority: number) => {
+		try {
+			const queue = await parseQueue(
+				options.queuePathAbs,
+				options.closedTasksPathAbs
+			);
+			const updated = enqueue(queue, {
+				taskId,
+				enqueuedAt: at,
+				priority: priority as 1 | 2 | 3 | 4 | 5,
+				waitFor: [],
+				owner: {
+					taskId,
+					agentName: 'watchdog',
+					agentSlot: 'orchestrator',
+				},
+				observe: [],
+				status: 'queued',
+			});
+			await persistQueue(updated, options.queuePathAbs);
+		} catch {
+			// Queue is optional coordination; never fail the registry op.
+		}
+	};
+
+	switch (args.action) {
+		case 'list': {
+			const r = await store.read();
+			return json({
+				summary: {
+					active: r.assignments.filter((a) => a.status === 'active')
+						.length,
+					cooldown: r.assignments.filter((a) => a.status === 'cooldown')
+						.length,
+					orphan: r.assignments.filter((a) => a.status === 'orphan')
+						.length,
+					adopted: r.adopted.length,
+				},
+				assignments: r.assignments,
+				adopted: r.adopted,
+			});
+		}
+
+		case 'tree': {
+			const r = await store.read();
+			return json(buildSubagentTree(r));
+		}
+
+		case 'who_uses': {
+			if (!args.agent) return json({ error: 'agent required' }, true);
+			const r = await store.read();
+			if (poolNames.has(args.agent)) {
+				const active = r.assignments.find(
+					(a) => a.agent_name === args.agent && a.status === 'active'
+				);
+				if (active)
+					return json({
+						agent: args.agent,
+						status: 'active',
+						in_cooldown: false,
+						task_id: active.task_id,
+					});
+				const held = r.assignments.find(
+					(a) =>
+						a.agent_name === args.agent &&
+						a.status === 'cooldown' &&
+						a.cooldown_until !== null &&
+						a.cooldown_until > at
+				);
+				if (held)
+					return json({
+						agent: args.agent,
+						status: 'cooldown',
+						in_cooldown: true,
+						task_id: held.task_id,
+					});
+				return json({
+					agent: args.agent,
+					status: 'free',
+					in_cooldown: false,
+				});
+			}
+			const adopted = r.adopted.find((a) => a.name === args.agent);
+			return json({
+				agent: args.agent,
+				status: adopted ? 'adopted' : 'free',
+				in_cooldown: false,
+			});
+		}
+
+		case 'heartbeat': {
+			if (!args.task_id) return json({ error: 'task_id required' }, true);
+			const r = await store.read();
+			const entry = r.assignments.find((a) => a.task_id === args.task_id);
+			if (!entry) return json({ error: 'unknown task_id' }, true);
+			entry.last_seen = at;
+			await store.write(r);
+			return json(entry);
+		}
+
+		case 'release': {
+			if (!args.task_id) return json({ error: 'task_id required' }, true);
+			const cooldownUntil = new Date(
+				new Date(at).getTime() +
+					SUBAGENT_CONVENTIONS.cooldown_days * 86_400_000
+			).toISOString();
+			await store.release(args.task_id, cooldownUntil);
+			const r = await store.read();
+			const released = new Set<string>([args.task_id]);
+			let changed = true;
+			while (changed) {
+				changed = false;
+				for (const a of r.assignments) {
+					if (
+						a.parent_task_id &&
+						released.has(a.parent_task_id) &&
+						!released.has(a.task_id)
+					) {
+						a.status = 'cooldown';
+						a.cooldown_until = cooldownUntil;
+						a.last_seen = at;
+						released.add(a.task_id);
+						changed = true;
+					}
+				}
+			}
+			await store.write(r);
+			return json({ released: [...released] });
+		}
+
+		case 'gc': {
+			const r = await store.read();
+			const cutoff =
+				new Date(at).getTime() -
+				SUBAGENT_CONVENTIONS.heartbeat_ttl_minutes * 60_000;
+			let freed = 0;
+			for (const a of r.assignments) {
+				if (a.status !== 'active') continue;
+				if (new Date(a.last_seen).getTime() < cutoff) {
+					a.status = 'orphan';
+					a.cooldown_until = new Date(
+						new Date(at).getTime() +
+							SUBAGENT_CONVENTIONS.cooldown_days * 86_400_000
+					).toISOString();
+					freed += 1;
+				}
+			}
+			await store.write(r);
+			try {
+				await gcZombies(
+					options.registryPathAbs,
+					options.lockPathAbs,
+					options.queuePathAbs,
+					{
+						dryRun: false,
+						staleAfterMinutes:
+							SUBAGENT_CONVENTIONS.heartbeat_ttl_minutes,
+						now: new Date(at),
+						queueEmitter: emitQueueEvent,
+					}
+				);
+			} catch {
+				// graceful degradation
+			}
+			return json({ promoted: freed, freed });
+		}
+
+		case 'reconcile': {
+			const report = await gcZombies(
+				options.registryPathAbs,
+				options.lockPathAbs,
+				options.queuePathAbs,
+				{
+					dryRun: args.dry_run,
+					staleAfterMinutes: args.stale_after_minutes,
+					now: new Date(at),
+					queueEmitter: emitQueueEvent,
+				}
+			);
+			return json(report);
+		}
+
+		case 'assign': {
+			if (!args.task_id || !args.agent_slot)
+				return json(
+					{ error: 'task_id and agent_slot required' },
+					true
+				);
+			if (!isCanonicalRole(args.agent_slot))
+				return json(
+					{
+						error: 'agent_slot must be a canonical role',
+						allowed: SUBAGENT_CANONICAL_ROLES,
+					},
+					true
+				);
+			const r = await store.read();
+			const parent = args.parent_task_id
+				? (r.assignments.find(
+						(a) => a.task_id === args.parent_task_id
+					) ?? null)
+				: null;
+			const depth = parent ? parent.depth + 1 : 0;
+			if (depth >= SUBAGENT_CONVENTIONS.max_depth)
+				return json(
+					{
+						blocked: true,
+						blockerType: 'name-conflict',
+						reason: 'max_depth_exceeded',
+						depth,
+						max_depth: SUBAGENT_CONVENTIONS.max_depth,
+						nextAction:
+							'Continue as a root-level handoff or ask the orchestrator to reattach the child; do not retry the same parent/depth.',
+					},
+					true
+				);
+
+			const taken = activeNames(r.assignments);
+			const inCooldown = cooldownNames(r.assignments, at);
+			let agentName: string;
+			let adopted = false;
+
+			if (args.agent) {
+				if (poolNames.has(args.agent)) {
+					if (taken.has(args.agent) || inCooldown.has(args.agent))
+						return json(
+							{
+								blocked: true,
+								blockerType: 'name-conflict',
+								reason: 'cooldown_or_taken',
+								agent: args.agent,
+								nextAction:
+									'Assign without `agent` or choose another free pool name; do not retry the same requested name.',
+							},
+							true
+						);
+					agentName = args.agent;
+				} else {
+					const updated = await store.markAdopted({
+						name: args.agent,
+						task_id: args.task_id,
+					});
+					r.adopted = updated.adopted;
+					agentName = args.agent;
+					adopted = true;
+				}
+			} else {
+				const picked = pickFromPool(
+					pool,
+					new Set([...taken, ...inCooldown]),
+					args.task_id
+				);
+				if (!picked)
+					return json(
+						{ error: 'pool_exhausted', pool_size: pool.length },
+						true
+					);
+				agentName = picked;
+			}
+
+			const assignment: ISubagentAssignment = {
+				task_id: args.task_id,
+				agent_name: agentName,
+				agent_slot: args.agent_slot,
+				parent_task_id: args.parent_task_id ?? null,
+				depth,
+				topic: args.topic ?? '',
+				adopted,
+				assigned_at: at,
+				last_seen: at,
+				cooldown_until: null,
+				status: 'active',
+			};
+			await store.upsert(assignment);
+			return json(assignment);
+		}
+
+		default:
+			return json({ error: 'unknown action' }, true);
+	}
+};
+
+/** Registration for `<prefix>_agent_names`. */
+export const buildAgentNamesRegistration = (
+	options: IAgentNamesToolOptions
+): IToolRegistration => ({
+	id: 'agent_names',
+	register: async (server) => {
+		server.registerTool(
+			`${options.namespacePrefix}_agent_names`,
+			{
+				description:
+					'Agent name registry for the whole agent tree — the root orchestrator (slot "orchestrator", depth 0) included, not only subagents. Actions: assign/release/heartbeat/list/tree/who_uses/gc/reconcile. Use for named/delegated agents, not normal single-slice work.',
+				inputSchema: z.object({
+					action: z.enum([
+						'assign',
+						'release',
+						'heartbeat',
+						'list',
+						'tree',
+						'who_uses',
+						'gc',
+						'reconcile',
+					]),
+					task_id: z.string().optional(),
+					agent: z.string().optional(),
+					agent_slot: z.string().optional(),
+					parent_task_id: z.string().nullable().optional(),
+					topic: z.string().optional(),
+					now: z.string().optional(),
+					dry_run: z.boolean().optional(),
+					stale_after_minutes: z.number().optional(),
+				}),
+			},
+			async (args: IAgentNamesArgs) => runAgentNames(args, options)
+		);
+	},
+});

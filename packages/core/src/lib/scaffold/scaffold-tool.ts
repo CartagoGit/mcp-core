@@ -1,4 +1,4 @@
-// p97 — the `<prefix>_scaffold` MCP tool: lets any agent in the host
+// the `<prefix>_scaffold` MCP tool: lets any agent in the host
 // workspace generate new tools, prompts, skills, agent adapters or a
 // complete host project. Dry-run by default; writes refuse to
 // overwrite existing files (scaffolds are starting points, not

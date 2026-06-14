@@ -2,7 +2,7 @@
  * proposal-parallelism.ts
  *
  * Runtime evaluation of the "one main write lane at a time" rule.
- * a2-proposal-parallelism-enforcement T1.
+ * Proposal parallelism enforcement.
  *
  * A proposal declares its `mainWriteLane` (the primary track the slice is
  * writing to) and `parallelismLanes` (the tracks it tolerates running in
@@ -26,7 +26,7 @@
 // ---------------------------------------------------------------------------
 
 /**
- * A canonical Affairs track. Mirrors the `track` field of
+ * A canonical the host project track. Mirrors the `track` field of
  * `IProposalFrontmatter`. Kept as a closed union so a stray typo in
  * the frontmatter fails at parse time.
  */

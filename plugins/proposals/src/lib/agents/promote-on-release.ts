@@ -2,7 +2,7 @@
  * promote-on-release.ts
  *
  * Auto-promoter hook for the agent-lock `release` action.
- * p40c T2 step 8.
+ * 
  *
  * Behavior:
  *   1. Read the queue (defensively — if the file is missing or empty,
@@ -107,7 +107,7 @@ const persistQueue = async (
 ): Promise<void> => {
 	const tmpPath = join(
 		tmpdir(),
-		`affairs-queue-promote-${Date.now()}-${Math.random().toString(36).slice(2)}.json`
+		`mcp-queue-promote-${Date.now()}-${Math.random().toString(36).slice(2)}.json`
 	);
 	const content = JSON.stringify(queue, null, 2);
 	await writeFile(tmpPath, content, 'utf8');

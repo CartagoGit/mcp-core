@@ -146,7 +146,7 @@ export function classifyZombies(
 	const recommendation =
 		orphans.length === 0
 			? 'No zombies detected.'
-			: `${orphans.length} zombie(s) detected. Recommended action: run affairs_subagent_names reconcile to clean up.`;
+			: `${orphans.length} zombie(s) detected. Recommended action: run <prefix>_agent_names reconcile to clean up.`;
 
 	return {
 		scannedAt: checkTime.toISOString(),

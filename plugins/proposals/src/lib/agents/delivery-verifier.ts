@@ -2,10 +2,10 @@
  * delivery-verifier.ts
  *
  * `verifyClosure` — the entry point that `delivery_verifier` uses to
- * close a proposal round. Created in p40c T3 (reserved file).
+ * close a proposal round. the original design (reserved file).
  *
  * Wires the persistent task queue into the verifier's verdict:
- *   - Reads `affairs_task_queue` with `action: 'report'` (read-only).
+ *   - Reads `<prefix>_task_queue` with `action: 'report'` (read-only).
  *   - Parses the result with the same Zod schemas the tool uses, so the
  *     verifier never trusts an untyped payload.
  *   - If the proposal declares `extras.taskQueue: true` and the report
@@ -13,7 +13,7 @@
  *     returns `verified: false` with a clear blocker.
  *   - If the proposal does NOT declare `extras.taskQueue: true`, the
  *     verifier ignores the report and emits `taskQueueReport: null`
- *     (back-compat with closures pre-dating p40c T3).
+ *     (back-compat with closures the original design).
  *
  * The verifier stays read-only: it only calls `runTaskQueueAction` with
  * `action: 'report'` and never with `enqueue` / `dequeue` / `subscribe`.
@@ -21,7 +21,7 @@
  * in this module) and tested by the spec.
  *
  * Spec: libs/mcp-server/tests/src/lib/agents/delivery-verifier.task-queue.spec.ts
- * Skill: libs/mcp-server/src/lib/skills/affairs-delivery-verifier.md
+ * Skill: libs/mcp-server/src/lib/skills/the delivery-verifier contract
  */
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
@@ -185,10 +185,10 @@ export { reportBackpressure };
  * can close cleanly under the persistent task queue contract; otherwise
  * `verified: false` with an ordered list of blockers.
  *
- * Rules (mirror of p40c T3 step 16):
+ * Rules (the original design):
  *   1. If `proposal.frontmatter.extras?.taskQueue !== true`:
  *        - `taskQueueReport` is `null` (back-compat with closures
- *          pre-dating p40c T3).
+ *          the original design).
  *        - The queue is not even read; this is a no-op for the
  *          historical proposal portfolio.
  *   2. If `proposal.frontmatter.extras?.taskQueue === true`:
@@ -204,7 +204,7 @@ export const verifyClosure = async (
 	const usesTaskQueue = input.proposal.frontmatter.extras?.taskQueue === true;
 
 	if (!usesTaskQueue) {
-		// Back-compat: the proposal predates p40c T3 or does not opt in.
+		// Back-compat: the proposal the original design or does not opt in.
 		// The verifier ignores the queue entirely. Cierres previos a esta
 		// fecha son válidos sin cola (regla de inmutabilidad histórica).
 		return {
@@ -226,7 +226,7 @@ export const verifyClosure = async (
 			verified: false,
 			taskQueueReport: report,
 			blockers,
-			recommendedNextSlice: 'p40c-stale-waiter-sweep',
+			recommendedNextSlice: 'stale-waiter-sweep',
 		};
 	}
 
@@ -243,7 +243,7 @@ export const verifyClosure = async (
 // ---------------------------------------------------------------------------
 // Default paths helper — for callers that don't have an explicit
 // `IVerifyPaths` ready (e.g. the spec, or the future
-// `affairs_delivery_verifier` tool).
+// `<prefix>_delivery_verifier` tool).
 // ---------------------------------------------------------------------------
 
 /**
@@ -251,7 +251,7 @@ export const verifyClosure = async (
  * caller can override any of the three fields before passing to
  * `verifyClosure`. The default `.cache/agent-queue/queue.json` and
  * `.cache/agent-queue/closed-tasks.json` paths are the canonical home
- * of the queue (introduced by p40c T1).
+ * of the queue (the original design).
  */
 export const defaultVerifyPaths = (): IVerifyPaths => ({
 	queuePath: join(process.cwd(), DEFAULT_PATH_LAYOUT.taskQueueFile),

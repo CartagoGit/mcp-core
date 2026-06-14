@@ -6,8 +6,8 @@ import { SUBAGENT_CANONICAL_ROLES } from '../shared/subagent-conventions';
 /**
  * Host vocabulary for closure-report validation. The framework owns
  * the report mechanics; the host owns which agent slots exist and
- * which models are valid (p86 — moved from the Affairs host where
- * these values came from `affairsConventions.hostModelInventory`).
+ * which models are valid (moved from the host project where
+ * these values came from `the host model inventory`).
  */
 export interface IAgentClosureVocabulary {
 	readonly slots: readonly string[];
@@ -440,11 +440,11 @@ export const assertGate = (
 };
 
 // ---------------------------------------------------------------------------
-// p40c T2 step 9: self-review gate → closedTasks.json hook
+// self-review gate → closedTasks.json hook
 // ---------------------------------------------------------------------------
 //
 // The pure `evaluateSelfReviewGate` and `assertGate` above are part of the
-// p35c contract and are exercised by 12+ existing specs. To avoid regressing
+// the existing contract and are exercised by specs. To avoid regressing
 // them, the closedTasks hook lives in a NEW entry point that wraps the
 // pure gate. When the pure gate returns `close`, this entry point also calls
 // `appendToClosedTasks(closedTasksPath, ...)` so the task appears in the
@@ -462,7 +462,7 @@ export const evaluateSelfReviewGateWithClosedTasksHook = async (
 	hookParams: IClosureHookParams,
 	vocabulary: IAgentClosureVocabulary = DEFAULT_AGENT_CLOSURE_VOCABULARY
 ): Promise<IClosureDecision> => {
-	// Reuse the pure gate; do not modify it (regression risk for p35c).
+	// Reuse the pure gate; do not modify it (regression risk).
 	const decision = evaluateSelfReviewGate(report, vocabulary);
 
 	if (decision.closureDecision !== 'close') {

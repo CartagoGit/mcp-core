@@ -1,5 +1,5 @@
 /**
- * agent-lock-engine.ts (p86 — moved from the Affairs host)
+ * agent-lock-engine.ts (moved from the host project)
  *
  * File-level write-ownership mutex with stale-claim GC: claim before
  * editing, release after editing, status/gc for stale claims. The
@@ -45,7 +45,7 @@ export type ILockFile = {
 export type IAgentLockDeps = {
 	lockPath?: string;
 	now?: () => string;
-	/** Tool name echoed in payloads (host injects e.g. `affairs_agent_lock`). */
+	/** Tool name echoed in payloads (host injects e.g. `<prefix>_agent_lock`). */
 	toolName?: string;
 	/** Workspace-relative label echoed in payloads. */
 	lockFileLabel?: string;

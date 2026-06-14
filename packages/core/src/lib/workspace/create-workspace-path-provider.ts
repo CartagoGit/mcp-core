@@ -6,7 +6,7 @@ import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-p
  * Default `IWorkspacePathProvider`: resolves workspace-relative
  * paths against an explicit root (never `process.cwd()` implicitly)
  * and memoises resolutions, mirroring the behaviour of the historical
- * Affairs `resolveWorkspacePath` helper.
+ * the host project `resolveWorkspacePath` helper.
  */
 export function createWorkspacePathProvider(
 	root: string

@@ -1,14 +1,14 @@
 /**
  * swarm-parser.ts
  *
- * parseSwarmFrontmatter — wraps p34's parseProposalDocument and merges the
+ * parseSwarmFrontmatter — wraps the base parseProposalDocument and merges the
  * new ISwarmBudget and IContinuityPolicy blocks from the frontmatter.
  *
  * Throws ProposalParseError with:
  *   code: 'INVALID_SWARM_BUDGET'      — swarmBudget validation failure
  *   code: 'INVALID_CONTINUITY_POLICY' — continuityPolicy validation failure
  *
- * Design: reuses parseProposalDocument from p34 for base document parsing
+ * Design: the original design for base document parsing
  * (id, type, status, track, budget, acceptanceCriteria, etc.) and adds its
  * own Zod-validated extension on top. The raw YAML is re-read from disk once
  * (same file handle) using the shared frontmatter-parser utilities.
@@ -75,7 +75,7 @@ const continuityPolicySchema = z.object({
 export const parseSwarmFrontmatter = async (
 	absolutePath: string
 ): Promise<ISwarmProposalExtension> => {
-	// Step 1: Run the base p34 parser. This validates id, type, status, track,
+	// Step 1: Run the base parser. This validates id, type, status, track,
 	// budget, acceptanceCriteria, etc. and throws on any base-level error.
 	// We do not use the returned document directly here — the goal is just
 	// to guarantee base validation runs before we layer the swarm extension.

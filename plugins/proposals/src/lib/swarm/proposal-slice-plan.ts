@@ -1,10 +1,10 @@
-// p81 — parallel slices per proposal (M3-first). The PLAN lives in
+// parallel slices per proposal (M3-first). The PLAN lives in
 // the proposal document itself (a `## Slices` section); this module
 // owns the pure mechanics: parsing, disjointness validation,
 // dependsOn ordering and claimability. Runtime "in-progress" state is
 // DERIVED from the agent lock (task_id === sliceId), and "done" from
 // an explicit `- status: done` line in the doc — no sidecar files, no
-// index.json changes (p81 non-goal).
+// index.json changes (non-goal).
 
 export type ISliceGate = 'lint' | 'type' | 'e2e' | 'none';
 

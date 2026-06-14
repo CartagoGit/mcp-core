@@ -1,7 +1,7 @@
 /**
  * proposal-document.ts
  *
- * Canonical parser for Affairs proposal markdown files.
+ * Canonical parser for the host project proposal markdown files.
  * Entry point: `parseProposalDocument(absolutePath)`.
  *
  * Shape produced: `IProposalDocument` with a typed `frontmatter` section
@@ -31,7 +31,7 @@ export type IExpectLiteral = (typeof EXPECT_LITERALS)[number];
 export type IExpectValue = IExpectLiteral | `contains:${string}`;
 
 // ---------------------------------------------------------------------------
-// Interfaces — prefix I required by project rule (p27).
+// Interfaces — prefix I required by project rule.
 // ---------------------------------------------------------------------------
 
 // IProposalBudget is defined in proposal-budget.ts (canonical location).

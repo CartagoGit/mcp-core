@@ -2,7 +2,7 @@
  * frontmatter-parser.ts
  *
  * Minimal YAML-compatible frontmatter parser shared across the proposals
- * module. Handles the subset of YAML actually used in Affairs proposal
+ * module. Handles the subset of YAML actually used in the host project proposal
  * frontmatter:
  *
  *   - Root-level scalars:          key: value

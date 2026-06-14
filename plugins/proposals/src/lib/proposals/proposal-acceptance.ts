@@ -1,7 +1,7 @@
 /**
  * proposal-acceptance.ts
  *
- * T3 slice of p34 (Proposal Budget + Execution Plan Tool).
+ * Proposal Budget + Execution Plan Tool.
  *
  * Executes the `IAcceptanceCriterion[]` declared in a proposal's
  * frontmatter and returns a structured verdict that `delivery_verifier`
@@ -10,7 +10,7 @@
  * The implementation is intentionally thin: one subprocess per criterion,
  * captured stdout + stderr + exitCode, with a configurable per-criterion
  * timeout. The shape is documented in the
- * `affairs-proposal-workflow.md` skill and locked by
+ * `the proposal-workflow knowledge` skill and locked by
  * `tests/src/lib/proposals/executable-acceptance.spec.ts`.
  *
  * Runtime: `Bun.spawn`. The script NEVER shells out via `node:child_process`
@@ -18,13 +18,13 @@
  * `bunfig.toml`. We use `bun -e` for inline one-liners (e.g. `process.exit(1)`)
  * to keep the test commands self-contained.
  *
- * Policy (from p34 proposal §T3 point 10):
+ * Policy (the original design proposal §T3 point 10):
  *   - `exit0`  → exit code must be 0.
  *   - `pass`   → exit code must be 0 (semantic alias for `exit0`; the
  *                proposal convention uses `pass` for vitest-style
  *                commands whose meaningful output is on stdout).
  *   - `synchronized` → exit code must be 0 (alias for `exit0`; the
- *                      `affairs_audit_*` tools return a structured
+ *                      `the host audit tools` tools return a structured
  *                      `synchronized | drift` verdict and the criterion
  *                      is satisfied when the process exits 0, leaving
  *                      the structural check to the runtime assertion).
@@ -180,7 +180,7 @@ const runOne = async (
 
 	// Use `bun -c <command>` to run the command via Bun's shell-less exec.
 	// We split the command on whitespace; this is a deliberate trade-off —
-	// full shell parsing is out of scope for the p34 round, and the
+	// full shell parsing is out of scope for this round, and the
 	// proposal convention is to keep acceptance commands as single
 	// `bun <args>` invocations.
 	const parts = criterion.command.split(/\s+/).filter((p) => p.length > 0);

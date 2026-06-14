@@ -1,0 +1,60 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import {
+	runContinueProposal,
+	type IContinueProposalToolOptions,
+} from '@cartago-git/mcp-proposals/lib/tools/continue-proposal.tool';
+
+const parse = (result: { content: Array<{ text: string }> }): any =>
+	JSON.parse(result.content[0]?.text ?? '{}');
+
+describe('continue_proposal (serial cascade)', () => {
+	let root = '';
+	let options: IContinueProposalToolOptions;
+
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'continue-'));
+		const indexPath = join(root, 'index.json');
+		writeFileSync(
+			indexPath,
+			JSON.stringify({
+				proposals: [
+					{ id: 'p2-second', file: 'p2.md', status: 'pending' },
+					{ id: 'f1-fix', file: 'f1.md', status: 'pending' },
+					{ id: 'p1-done', file: 'p1.md', status: 'done' },
+				],
+			})
+		);
+		options = {
+			namespacePrefix: 'proposals',
+			indexPathAbs: indexPath,
+			lockPathAbs: join(root, 'lock.json'),
+		};
+	});
+
+	afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+	it('returns the next actionable proposal, fixes (f) before proposals (p)', async () => {
+		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
+		expect(out.kind).toBe('next-proposal');
+		expect(out.proposalId).toBe('f1-fix');
+	});
+
+	it('reports no-proposal when nothing is actionable', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({ proposals: [{ id: 'p1', file: 'p1.md', status: 'done' }] })
+		);
+		const out = parse(await runContinueProposal({}, options));
+		expect(out.kind).toBe('no-proposal');
+	});
+
+	it('errors clearly when a slice mode is used without a proposalId', async () => {
+		const out = parse(await runContinueProposal({ mode: 'plan' }, options));
+		expect(out.kind).toBe('slice-mode-error');
+	});
+});

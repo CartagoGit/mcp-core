@@ -2,6 +2,9 @@ import { definePlugin } from '@cartago-git/mcp-core/public';
 
 import { DEFAULT_PATH_LAYOUT } from './lib/contracts/constants/default-path-layout.constant';
 import { buildAgentLockRegistration } from './lib/tools/agent-lock.tool';
+import { buildAgentNamesRegistration } from './lib/tools/agent-names.tool';
+import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
+import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
 import { buildSyncProposalsRegistration } from './lib/tools/sync-proposals.tool';
@@ -65,6 +68,47 @@ export default definePlugin({
 					digestPathAbs: abs(layout.roundContextDigestFile),
 					coreDocs: ['README.md', layout.proposalIndexFile],
 				}),
+				buildAgentNamesRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					registryPathAbs: abs(layout.subagentRegistryFile),
+					lockPathAbs: abs(layout.lockFile),
+					queuePathAbs: abs(layout.taskQueueFile),
+					closedTasksPathAbs: abs(layout.closedTasksFile),
+					...(Array.isArray(ctx.options['namePool'])
+						? { pool: ctx.options['namePool'] as string[] }
+						: {}),
+				}),
+				buildContinueProposalRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					indexPathAbs: abs(layout.proposalIndexFile),
+					lockPathAbs: abs(layout.lockFile),
+					...(Array.isArray(ctx.options['familyCascade'])
+						? {
+								familyCascade: ctx.options[
+									'familyCascade'
+								] as string[],
+							}
+						: {}),
+				}),
+				buildAutoWorkRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					indexPathAbs: abs(layout.proposalIndexFile),
+					lockPathAbs: abs(layout.lockFile),
+					...(Array.isArray(ctx.options['familyCascade'])
+						? {
+								familyCascade: ctx.options[
+									'familyCascade'
+								] as string[],
+							}
+						: {}),
+					...(typeof ctx.options['validationCommand'] === 'string'
+						? {
+								validationCommand: ctx.options[
+									'validationCommand'
+								] as string,
+							}
+						: {}),
+				}),
 			],
 			knowledge: [
 				{
@@ -73,14 +117,18 @@ export default definePlugin({
 					body: [
 						'# Proposals workflow',
 						'',
-						`Tools are namespaced \`${ctx.namespacePrefix}_*\`.`,
+						`Tools are namespaced \`${ctx.namespacePrefix}_*\`. Start with \`auto_work\`.`,
 						'',
-						'1. Claim the files you will edit with `agent_lock` (action "claim", a unique task_id, and the file list). Report `lock-conflict` instead of retrying on a blocked claim.',
-						'2. Do one atomic slice of work; keep edits within the claimed files.',
-						'3. Release with `agent_lock` (action "release") when the slice closes.',
-						'4. Use `task_queue` (enqueue/dequeue/subscribe/report) only to coordinate parallel agents (waitFor / observe / backpressure).',
+						'- `auto_work` — one call: the next proposal + an ordered action plan.',
+						'- `continue_proposal` — next proposal (mode "auto"), or a parallel slice plan/claim (modes "plan"/"claim").',
+						'- `agent_lock` — claim files before editing, release after (claim/release/status/gc).',
+						'- `get_proposal_workflow` — families, locations, naming, template.',
+						'- `sync_proposals` — rebuild the index after creating/renaming proposal files.',
+						'- `agent_names` — name the whole agent tree, orchestrator included.',
+						'- `task_queue` / `round_context` — multi-agent coordination & resumed rounds.',
 						'',
-						`Cache/state lives under \`${layout.scratchDir}\`; proposal documents under \`${layout.proposalsDir}\`.`,
+						'Loop: claim → one atomic slice → validate → sync → release. Report `lock-conflict` instead of retrying a blocked claim.',
+						`State under \`${layout.scratchDir}\`; proposals under \`${layout.proposalsDir}\`.`,
 					].join('\n'),
 				},
 			],

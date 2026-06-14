@@ -1,15 +1,15 @@
 // filepath: libs/mcp-server/src/lib/shared/proposal-frontmatter.ts
 // Tiny frontmatter parser for the orchestrator handoff metrics.
 //
-// Affairs proposals use a flat YAML frontmatter with simple
+// the host project proposals use a flat YAML frontmatter with simple
 // `key: value` lines (no nested objects, no lists). This module
 // parses exactly that shape. It is intentionally NOT a full YAML
-// parser: p22 T1 only needs `opened` / `created` / `updated` and
+// parser: only needs `opened` / `created` / `updated` and
 // pulling `js-yaml` for that would be overkill and would bloat the
 // runtime for a single integer metric.
 //
 // Conventions respected:
-//   - No `as any` (rule p27). The parser returns `string | undefined`
+//   - No `as any`. The parser returns `string | undefined`
 //     for every key and the caller narrows.
 //   - Pure function; no I/O. The caller decides which file to read.
 //   - The parser is strict about the frontmatter fence: the file

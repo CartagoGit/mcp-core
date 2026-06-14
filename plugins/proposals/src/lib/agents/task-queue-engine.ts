@@ -1,8 +1,8 @@
 /**
  * task-queue-tool.ts
  *
- * affairs_task_queue — MCP tool with four actions: enqueue, dequeue, subscribe, report.
- * p40c T2 step 7.
+ * <prefix>_task_queue — MCP tool with four actions: enqueue, dequeue, subscribe, report.
+ * 
  *
  * This module exposes `runTaskQueueAction` (a pure function) and the
  * MCP-registration helper. The tool is registered in T3 (reserved: server.ts).
@@ -284,7 +284,7 @@ const buildRecommendation = (report: IBackpressureReport): string => {
 //
 // Cross-session idempotency is out of scope for T2: a process restart
 // re-delivers the digests once. The proposal marks this as a follow-up
-// for p40d (task-graph-validator) where the digests would be stored
+// for a future task-graph-validator where the digests would be stored
 // in a side-file keyed by the observer taskId.
 const deliveredDigests = new Set<string>();
 

@@ -2,7 +2,7 @@
  * persistent-task-queue.ts
  *
  * IPersistentTaskQueue — cola duradera persistida en disco.
- * p40c T1 implementation.
+ * Persistent task-queue implementation.
  *
  * Depends on: Zod (already in stack), Bun.write (built-in), fs/promises.
  */
@@ -389,7 +389,7 @@ export const persistQueue = async (
 ): Promise<void> => {
 	const tmpPath = join(
 		tmpdir(),
-		`affairs-queue-${Date.now()}-${Math.random().toString(36).slice(2)}.json`
+		`mcp-queue-${Date.now()}-${Math.random().toString(36).slice(2)}.json`
 	);
 	const content = JSON.stringify(queue, null, 2);
 	await writeFile(tmpPath, content, 'utf8');
@@ -740,11 +740,11 @@ export const subscribe = (
 // loadLockSnapshot — reads .cache/agents.lock.json + closedTasks.json
 // ---------------------------------------------------------------------------
 
-// The actual `affairs_agent_lock` writes `ownership` (not `files`) and
+// The actual `<prefix>_agent_lock` writes `ownership` (not `files`) and
 // `started_at` / `last_seen` (not `claimed_at`). The schema below is
 // tolerant of both the historical shape (T1/T2 fixtures used `files` +
 // `claimed_at`) and the current shape (T3 and later, used by
-// `affairs_agent_lock` in production).
+// `<prefix>_agent_lock` in production).
 const LockEntrySchema = z
 	.object({
 		task_id: z.string(),

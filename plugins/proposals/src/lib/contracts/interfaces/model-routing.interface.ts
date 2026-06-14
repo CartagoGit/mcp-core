@@ -1,6 +1,6 @@
 /**
  * Maps agent roles to model identifiers. The host decides which
- * models exist (in Affairs the default is `MiniMax-M3
+ * models exist (in the host project the default is `MiniMax-M3
  * (customendpoint)`); mcp-core only serves the table.
  */
 export interface IModelRoute {

@@ -2,10 +2,10 @@
  * swarm-closure.ts
  *
  * `runSwarmClosure` — final closure decision for a proposal that
- * declares the p34b T1 frontmatter (`swarmBudget`, `continuityPolicy`).
+ * declares the swarm frontmatter (`swarmBudget`, `continuityPolicy`).
  *
  * Composes:
- *   - `validateBudget` (p34) over `IProposalBudget`
+ *   - `validateBudget` over `IProposalBudget`
  *   - `evaluateContinuityPolicy` (T1) over `IContinuityPolicy`
  *   - A subagent-tree summary (provided by the orchestrator at closure)
  *   - A live-lock snapshot (provided by the orchestrator at closure)
@@ -15,7 +15,7 @@
  * closureDecision }` where `closureDecision` is
  * `'close' | 'open_fix' | 'open_heredera'`.
  *
- * The verifier (`affairs-delivery-verifier.md`) reads this shape and
+ * The verifier (`the delivery-verifier contract`) reads this shape and
  * rejects `done` if `closureDecision !== 'close'`.
  */
 
@@ -55,7 +55,7 @@ export interface ILockSnapshot {
 
 /**
  * Subagent registry summary at closure time. The orchestrator collects
- * this from `affairs_subagent_names` / `.cache/subagent-registry.json`.
+ * this from `<prefix>_agent_names` / `.cache/subagent-registry.json`.
  */
 export interface ISubagentTreeSummary {
 	readonly totalAssignments: number;
@@ -181,13 +181,13 @@ const findStaleLocks = (
 export const runSwarmClosure = (input: ICloseSwarmInput): ICloseSwarmResult => {
 	const violations: ISwarmViolation[] = [];
 
-	// 1. Proposal budget (p34). Empty budget → no enforcement.
+	// 1. Proposal budget. Empty budget → no enforcement.
 	const budgetResult = validateBudget(input.budget, input.observedUsage);
 	for (const v of budgetResult.violations) {
 		violations.push(toBudgetViolation(v));
 	}
 
-	// 2. Continuity policy (p34b T1). Empty policy → no enforcement.
+	// 2. Continuity policy. Empty policy → no enforcement.
 	const continuityResult: IContinuityCheckResult = evaluateContinuityPolicy(
 		input.continuityPolicy,
 		input.observedContinuity
@@ -247,7 +247,7 @@ export const runSwarmClosure = (input: ICloseSwarmInput): ICloseSwarmResult => {
 
 	// Decision policy:
 	//   - block → 'open_fix' (operator or implementation_runner fixes)
-	//   - warn  → 'close' (informational; same as p34)
+	//   - warn  → 'close' (informational)
 	const closureDecision: IClosureDecision = hasBlock ? 'open_fix' : 'close';
 
 	return {

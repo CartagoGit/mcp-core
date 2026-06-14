@@ -3,7 +3,7 @@
  *
  * evaluateContinuityPolicy — evaluates observed session state against a
  * declared IContinuityPolicy, returning a structured result that mirrors
- * the shape of validateBudget from proposal-budget.ts (p34).
+ * the shape of validateBudget from proposal-budget.ts.
  *
  * Shape: { withinPolicy: boolean, violations: IContinuityViolation[] }
  */

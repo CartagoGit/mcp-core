@@ -28,6 +28,31 @@ export type {
 	IRoundContextOutput,
 } from '../lib/tools/round-context.tool';
 export {
+	buildAgentNamesRegistration,
+	runAgentNames,
+} from '../lib/tools/agent-names.tool';
+export type {
+	IAgentNamesToolOptions,
+	IAgentNamesArgs,
+} from '../lib/tools/agent-names.tool';
+export {
+	DEFAULT_AGENT_NAME_POOL,
+	pickFromPool,
+} from '../lib/knowledge/agent-name-pool';
+export {
+	buildContinueProposalRegistration,
+	runContinueProposal,
+} from '../lib/tools/continue-proposal.tool';
+export type {
+	IContinueProposalToolOptions,
+	IContinueProposalArgs,
+} from '../lib/tools/continue-proposal.tool';
+export {
+	buildAutoWorkRegistration,
+	runAutoWork,
+} from '../lib/tools/auto-work.tool';
+export type { IAutoWorkToolOptions } from '../lib/tools/auto-work.tool';
+export {
 	buildProposalWorkflow,
 } from '../lib/knowledge/proposal-workflow';
 export type { IProposalWorkflow } from '../lib/knowledge/proposal-workflow';

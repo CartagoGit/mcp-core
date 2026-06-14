@@ -17,8 +17,8 @@ export interface IMcpCoreServer {
 
 /**
  * Core registrations owned by the framework. Empty until the tool
- * engines migrate from the Affairs host (p86+); the sequence is data
- * so the semantically load-bearing order (p40c) survives the move.
+ * engines migrate from the host project; the sequence is data
+ * so the semantically load-bearing order survives the move.
  */
 export function coreToolRegistrations(
 	_config: IMcpCoreHostConfig

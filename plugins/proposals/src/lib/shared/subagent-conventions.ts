@@ -2,7 +2,7 @@
  * Conventions for the subagent name registry.
  *
  * The registry assigns a known video game title to each subagent that joins
- * the Affairs workspace, frees the title when the subagent is done, and
+ * the the host project workspace, frees the title when the subagent is done, and
  * keeps a parent -> children tree. These constants drive that lifecycle.
  *
  * `cooldown_days` and `heartbeat_ttl_minutes` cover two failure modes:

@@ -1,8 +1,8 @@
 /**
  * continuity-enforcer.ts
  *
- * Connects evaluateContinuityPolicy (p34b T1) to the runtime of
- * `affairs_continue_proposal`. The enforcer is a pure function: it
+ * Connects evaluateContinuityPolicy to the runtime of
+ * `<prefix>_continue_proposal`. The enforcer is a pure function: it
  * takes an already-resolved cascade decision plus the observed session
  * state (queue, registry, round context), and either lets the
  * decision through or downgrades `decision.mode` to `reset` with a
@@ -33,7 +33,7 @@ import { evaluateContinuityPolicy } from './continuity-policy';
  * The minimum slice of IContinueProposalStep.decision that the enforcer
  * reads and mutates. Using a structural type keeps the enforcer
  * independent of the full interface (which lives in
- * `contracts/interfaces/affairs-continue-proposal.interface.ts`).
+ * `contracts/interfaces/the continue-proposal flow.interface.ts`).
  */
 export interface IEnforceDecisionLike {
 	readonly layer: string;
