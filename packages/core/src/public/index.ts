@@ -58,9 +58,21 @@ export { parseCliArgs, DEFAULT_CLI_ARGS } from '../lib/plugins/parse-cli-args';
 export type { IMcpCoreCliArgs } from '../lib/plugins/parse-cli-args';
 export {
 	DEFAULT_CONFIG_FILENAME,
+	CONFIG_FILE_SCHEMA,
+	diagnoseConfigFile,
 	parseConfigFile,
 	pluginConfigFor,
 } from '../lib/plugins/load-config-file';
+export {
+	assembleCliConfig,
+	runCli,
+	runDoctor,
+} from '../lib/cli/assemble';
+export type {
+	IAssembledCliConfig,
+	IAssembleCliDeps,
+	IDoctorReport,
+} from '../lib/cli/assemble';
 export type {
 	IMcpCoreConfigFile,
 	IMcpCorePluginConfig,

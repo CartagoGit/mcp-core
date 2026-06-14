@@ -10,6 +10,7 @@ import type { Alias } from 'vitest/config';
 export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const core = resolve(workspaceRoot, 'packages/core/src');
 	const proposals = resolve(workspaceRoot, 'plugins/proposals/src');
+	const rules = resolve(workspaceRoot, 'plugins/rules/src');
 	return [
 		{
 			find: '@cartago-git/mcp-core/public',
@@ -31,6 +32,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@cartago-git/mcp-proposals',
 			replacement: resolve(proposals, 'index.ts'),
+		},
+		{
+			find: '@cartago-git/mcp-rules/public',
+			replacement: resolve(rules, 'public/index.ts'),
+		},
+		{
+			find: /^@cartago-git\/mcp-rules\/lib\/(.*)$/,
+			replacement: resolve(rules, 'lib') + '/$1',
+		},
+		{
+			find: '@cartago-git/mcp-rules',
+			replacement: resolve(rules, 'index.ts'),
 		},
 	];
 };

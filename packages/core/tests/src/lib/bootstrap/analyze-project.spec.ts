@@ -52,6 +52,29 @@ describe('analyzeProject', () => {
 		expect(analysis.hasPackageJson).toBe(false);
 		expect(analysis.projectType).toBe('generic');
 	});
+
+	it('detects non-JS stacks (rust cli) and CI + agent configs', () => {
+		const analysis = analyzeProject(
+			reader({
+				'Cargo.toml': '[package]\nname="x"',
+				'src/main.rs': 'fn main() {}',
+				'.gitlab-ci.yml': 'stages: [test]',
+				'CLAUDE.md': '# guide',
+			})
+		);
+		expect(analysis.language).toBe('rust');
+		expect(analysis.projectType).toBe('cli');
+		expect(analysis.ci).toContain('gitlab-ci');
+		expect(analysis.agentConfigs).toContain('CLAUDE.md');
+	});
+
+	it('detects monorepo tooling (nx/turbo)', () => {
+		const analysis = analyzeProject(
+			reader({ 'package.json': '{"name":"r"}', 'turbo.json': '{}' })
+		);
+		expect(analysis.monorepoTool).toBe('turbo');
+		expect(analysis.projectType).toBe('monorepo');
+	});
 });
 
 describe('recommendServerPlan', () => {

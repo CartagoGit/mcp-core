@@ -21,12 +21,10 @@ describe('buildSwarmPaths', () => {
 });
 
 describe('DEFAULT_PATH_LAYOUT', () => {
-	it('defaults cache under .cache/mcp-core/proposals and docs under docs/mcp-core', () => {
-		expect(DEFAULT_PATH_LAYOUT.scratchDir).toBe('.cache/mcp-core/proposals');
-		expect(DEFAULT_PATH_LAYOUT.lockFile).toBe(
-			'.cache/mcp-core/proposals/agents.lock.json'
-		);
-		expect(DEFAULT_PATH_LAYOUT.proposalsDir).toBe('docs/mcp-core/proposals');
+	it('defaults to the conventional .cache + docs/proposals layout', () => {
+		expect(DEFAULT_PATH_LAYOUT.scratchDir).toBe('.cache');
+		expect(DEFAULT_PATH_LAYOUT.lockFile).toBe('.cache/agents.lock.json');
+		expect(DEFAULT_PATH_LAYOUT.proposalsDir).toBe('docs/proposals');
 	});
 
 	it('keeps every artefact inside the scratch or proposals dirs', () => {

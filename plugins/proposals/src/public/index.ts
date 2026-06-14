@@ -10,6 +10,19 @@ export {
 	buildSwarmPaths,
 } from '../lib/contracts/constants/default-path-layout.constant';
 export type { IHostPathLayout } from '../lib/contracts/interfaces/swarm-path-layout.interface';
+// Swarm-domain contracts (moved out of the agnostic core).
+export type {
+	IProposalFamily,
+	IProposalStoreConfig,
+} from '../lib/contracts/interfaces/proposal-store.interface';
+export type {
+	ICloseMarker,
+	ICloseMarkerSet,
+} from '../lib/contracts/interfaces/close-markers.interface';
+export type {
+	IModelRoute,
+	IModelRoutingTable,
+} from '../lib/contracts/interfaces/model-routing.interface';
 
 export { buildAgentLockRegistration } from '../lib/tools/agent-lock.tool';
 export type { IAgentLockToolOptions } from '../lib/tools/agent-lock.tool';

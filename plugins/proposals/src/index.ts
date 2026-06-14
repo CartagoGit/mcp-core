@@ -1,4 +1,5 @@
 import { definePlugin } from '@cartago-git/mcp-core/public';
+import { z } from 'zod';
 
 import { DEFAULT_PATH_LAYOUT } from './lib/contracts/constants/default-path-layout.constant';
 import { buildAgentLockRegistration } from './lib/tools/agent-lock.tool';
@@ -29,6 +30,14 @@ export default definePlugin({
 	version: '0.1.0',
 	describe:
 		'Proposal store + file-level agent locks + persistent task queue (multi-agent swarm coordination).',
+	optionsSchema: z.object({
+		/** Custom symbolic agent-name pool. */
+		namePool: z.array(z.string()).optional(),
+		/** Family prefixes in cascade order, e.g. ["f","p"]. */
+		familyCascade: z.array(z.string()).optional(),
+		/** Quality-gate command surfaced by auto_work. */
+		validationCommand: z.string().optional(),
+	}),
 	register(ctx) {
 		// All path-bearing tools share ONE layout so locks, queue,
 		// round-context and the proposal store always agree. The engines

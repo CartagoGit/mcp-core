@@ -20,18 +20,32 @@ export type IProjectType =
 	| 'monorepo'
 	| 'generic';
 
+export type IProjectLanguage =
+	| 'typescript'
+	| 'javascript'
+	| 'python'
+	| 'go'
+	| 'rust'
+	| 'unknown';
+
 export interface IProjectAnalysis {
 	readonly hasPackageJson: boolean;
 	readonly name: string | undefined;
 	readonly projectType: IProjectType;
-	readonly language: 'typescript' | 'javascript' | 'unknown';
+	readonly language: IProjectLanguage;
 	readonly packageManager: 'bun' | 'pnpm' | 'yarn' | 'npm' | 'unknown';
 	readonly framework: string | undefined;
 	readonly testRunner: 'vitest' | 'jest' | 'bun' | 'node' | 'unknown';
+	/** Monorepo tool detected (e.g. `nx`, `turbo`, `bun-workspaces`). */
+	readonly monorepoTool: string | undefined;
 	/** True if the project already ships (or depends on) an MCP server. */
 	readonly hasMcpServer: boolean;
 	/** Evidence behind `hasMcpServer`. */
 	readonly mcpEvidence: readonly string[];
+	/** Detected CI systems (file evidence). */
+	readonly ci: readonly string[];
+	/** Detected AI-agent config files already in the repo. */
+	readonly agentConfigs: readonly string[];
 	/** Recognised quality-gate scripts, by role. */
 	readonly scripts: Readonly<Record<string, string>>;
 	/** Free-form notes the recommender and the agent can use. */
@@ -117,16 +131,85 @@ const pickScripts = (
 	return out;
 };
 
+const detectMonorepoTool = (
+	reader: IFileReader,
+	pkg: IPackageJson | undefined
+): string | undefined => {
+	if (reader.exists('nx.json')) return 'nx';
+	if (reader.exists('turbo.json')) return 'turbo';
+	if (reader.exists('pnpm-workspace.yaml')) return 'pnpm-workspaces';
+	if (reader.exists('lerna.json')) return 'lerna';
+	if (pkg?.workspaces !== undefined) return 'bun/npm-workspaces';
+	return undefined;
+};
+
+const detectLanguage = (
+	reader: IFileReader,
+	pkg: IPackageJson | undefined
+): IProjectLanguage => {
+	if (reader.exists('tsconfig.json') || reader.exists('tsconfig.base.json')) {
+		return 'typescript';
+	}
+	if (pkg !== undefined) return 'javascript';
+	if (
+		reader.exists('pyproject.toml') ||
+		reader.exists('requirements.txt') ||
+		reader.exists('setup.py')
+	) {
+		return 'python';
+	}
+	if (reader.exists('go.mod')) return 'go';
+	if (reader.exists('Cargo.toml')) return 'rust';
+	return 'unknown';
+};
+
+const detectCi = (reader: IFileReader): string[] => {
+	const ci: string[] = [];
+	if (reader.listDir('.github/workflows').length > 0) ci.push('github-actions');
+	if (reader.exists('.gitlab-ci.yml')) ci.push('gitlab-ci');
+	if (reader.exists('azure-pipelines.yml')) ci.push('azure-pipelines');
+	if (reader.exists('.circleci/config.yml')) ci.push('circleci');
+	if (reader.exists('Jenkinsfile')) ci.push('jenkins');
+	return ci;
+};
+
+const detectAgentConfigs = (reader: IFileReader): string[] => {
+	const configs: string[] = [];
+	if (reader.exists('CLAUDE.md')) configs.push('CLAUDE.md');
+	if (reader.exists('AGENTS.md')) configs.push('AGENTS.md');
+	if (reader.exists('.cursorrules') || reader.listDir('.cursor').length > 0) {
+		configs.push('cursor');
+	}
+	if (reader.exists('.github/copilot-instructions.md')) {
+		configs.push('copilot-instructions');
+	}
+	if (reader.listDir('.github/agents').length > 0) configs.push('github-agents');
+	if (reader.exists('.windsurfrules')) configs.push('windsurf');
+	return configs;
+};
+
 const detectProjectType = (
+	reader: IFileReader,
 	pkg: IPackageJson | undefined,
 	deps: Record<string, string>,
-	framework: string | undefined
+	framework: string | undefined,
+	monorepoTool: string | undefined
 ): IProjectType => {
-	if (pkg?.workspaces !== undefined) return 'monorepo';
+	if (monorepoTool !== undefined) return 'monorepo';
 	if (detectGame(deps)) return 'game';
 	if (framework !== undefined) return 'webapp';
 	if (pkg?.bin !== undefined) return 'cli';
 	if (pkg?.exports !== undefined || pkg?.main !== undefined) return 'library';
+	// Non-JS stacks.
+	if (reader.exists('Cargo.toml')) {
+		return reader.exists('src/main.rs') ? 'cli' : 'library';
+	}
+	if (reader.exists('go.mod')) {
+		return reader.exists('main.go') ? 'cli' : 'library';
+	}
+	if (reader.exists('pyproject.toml') || reader.exists('setup.py')) {
+		return 'library';
+	}
 	return 'generic';
 };
 
@@ -157,20 +240,39 @@ export const analyzeProject = (reader: IFileReader): IProjectAnalysis => {
 	const deps = allDeps(pkg);
 	const scripts = pkg?.scripts ?? {};
 	const framework = detectFramework(deps);
-	const language =
-		reader.exists('tsconfig.json') || reader.exists('tsconfig.base.json')
-			? 'typescript'
-			: pkg !== undefined
-				? 'javascript'
-				: 'unknown';
+	const language = detectLanguage(reader, pkg);
+	const monorepoTool = detectMonorepoTool(reader, pkg);
 	const mcp = detectMcp(reader, deps);
-	const projectType = detectProjectType(pkg, deps, framework);
+	const projectType = detectProjectType(
+		reader,
+		pkg,
+		deps,
+		framework,
+		monorepoTool
+	);
+	const ci = detectCi(reader);
+	const agentConfigs = detectAgentConfigs(reader);
 
 	const signals: string[] = [];
-	if (pkg === undefined) signals.push('no package.json — limited analysis');
-	if (mcp.has) signals.push('an MCP server already exists; recommend augmenting, not replacing');
-	else signals.push('no MCP server detected; a fresh one can be scaffolded');
+	if (pkg === undefined && language === 'unknown') {
+		signals.push('no recognised manifest — limited analysis');
+	}
+	signals.push(
+		mcp.has
+			? 'an MCP server already exists; recommend augmenting, not replacing'
+			: 'no MCP server detected; a fresh one can be scaffolded'
+	);
 	if (framework !== undefined) signals.push(`web framework: ${framework}`);
+	if (monorepoTool !== undefined) signals.push(`monorepo tool: ${monorepoTool}`);
+	if (language !== 'typescript' && language !== 'javascript') {
+		signals.push(`non-JS stack: ${language}`);
+	}
+	if (agentConfigs.length > 0) {
+		signals.push(
+			`existing agent config (${agentConfigs.join(', ')}); align with it`
+		);
+	}
+	if (ci.length > 0) signals.push(`CI: ${ci.join(', ')}`);
 
 	return {
 		hasPackageJson: pkg !== undefined,
@@ -180,8 +282,11 @@ export const analyzeProject = (reader: IFileReader): IProjectAnalysis => {
 		packageManager: detectPackageManager(reader),
 		framework,
 		testRunner: detectTestRunner(deps, scripts),
+		monorepoTool,
 		hasMcpServer: mcp.has,
 		mcpEvidence: mcp.evidence,
+		ci,
+		agentConfigs,
 		scripts: pickScripts(scripts),
 		signals,
 	};

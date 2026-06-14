@@ -50,7 +50,13 @@ scaffolding tools.
 | `--name=NAME` | `mcp-core` | Server name advertised over MCP. |
 | `--prefix=NS` | `mcpcore` | Namespace for the core's own tools (`<NS>_analyze_project`, …). |
 | `--config=FILE` | `mcp-core.config.json` | Config file with per-plugin values (see below). |
+| `--check` | — | Doctor mode: validate config, resolve/load plugins and print a report (tools/prompts/resources counts, errors) **without** starting the server. |
 | `--<anything>=value` | — | Forwarded to every plugin via `ctx.args`. |
+
+```bash
+# Diagnose a setup before wiring it into a client:
+bunx @cartago-git/mcp-core --plugins=proposals --check
+```
 
 ## Passing values to plugins — `mcp-core.config.json`
 
@@ -75,15 +81,28 @@ never crashes the server.
 
 ## Built-in tools (always available)
 
+- **`<prefix>_overview`** — cold-start map: server identity, loaded plugins,
+  every tool with a one-line summary, knowledge ids, paths and the recommended
+  next action. **Call this first** — one low-token round-trip orients any model.
+- **`<prefix>_knowledge`** — list knowledge ids/titles, or fetch one by id.
+  Lazy: read a doc only when needed.
+- **`<prefix>_get_validation_matrix`** — the quality-gate commands per scope
+  (how to validate work here), from `mcp-core.config.json`.
 - **`<prefix>_analyze_project`** — read-only. Inspects the project and returns a
-  structured analysis **plus a recommended server plan** (project type, tools,
-  plugins, validation commands, and a ready-to-paste `mcp.json`). Run it first.
+  structured analysis **plus a recommended server plan** (project type incl.
+  python/go/rust/monorepo, tools, plugins, validation commands, detected CI and
+  agent configs, and a ready-to-paste `mcp.json`).
 - **`<prefix>_create_server`** — turns a plan into the files for a
   project-specific server (or a new plugin). Returns the files **for the agent
   to write**; it never touches disk.
 - **`<prefix>_scaffold`** — generates a single tool / prompt / skill / agent /
   host project / **plugin** from templates. Dry-run by default; never
   overwrites.
+
+Also exposed: knowledge as **MCP resources** (`knowledge://<id>`) and a
+**`<prefix>_start`** workflow **prompt** for one-click orientation in clients.
+Every tool returns compact JSON with a uniform envelope
+(`{ ok, error: { reason, nextAction } }`) so any agent handles results the same.
 
 ### The bootstrap flow
 

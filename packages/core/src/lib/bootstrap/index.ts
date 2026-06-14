@@ -2,6 +2,7 @@ export { analyzeProject } from './analyze-project';
 export type {
 	IFileReader,
 	IProjectAnalysis,
+	IProjectLanguage,
 	IProjectType,
 } from './analyze-project';
 export {

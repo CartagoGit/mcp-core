@@ -32,7 +32,12 @@
 			"@cartago-git/mcp-proposals/public": [
 				"./plugins/proposals/src/public/index.ts"
 			],
-			"@cartago-git/mcp-proposals/*": ["./plugins/proposals/src/*"]
+			"@cartago-git/mcp-proposals/*": ["./plugins/proposals/src/*"],
+			"@cartago-git/mcp-rules": ["./plugins/rules/src/index.ts"],
+			"@cartago-git/mcp-rules/public": [
+				"./plugins/rules/src/public/index.ts"
+			],
+			"@cartago-git/mcp-rules/*": ["./plugins/rules/src/*"]
 		}
 	},
 	"exclude": ["node_modules", "dist", "build", ".cache"]
