@@ -161,6 +161,10 @@ from any other repo.
   agent locks + task queue; the multi-agent "swarm" coordination layer).
 - `plugins/rules` → **`@cartago-git/mcp-rules`** (per-framework ESLint/TS
   presets, per-area detection, enforcement modes; the project's config wins).
+- `plugins/memory` → **`@cartago-git/mcp-memory`** (persistent project notes
+  for cross-session continuity, minimal tokens).
+- `plugins/git` → **`@cartago-git/mcp-git`** (read-only git orientation:
+  status / changed / diff / log).
 
 ## Design principles (model/agent-agnostic, low-token)
 

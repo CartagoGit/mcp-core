@@ -1,0 +1,72 @@
+import { describe, expect, it } from 'vitest';
+
+import {
+	gitChanged,
+	gitLog,
+	gitStatus,
+	parseLog,
+	parseStatus,
+} from '@cartago-git/mcp-git/lib/git';
+import type { IGitRunner } from '@cartago-git/mcp-git/lib/git';
+import plugin from '@cartago-git/mcp-git';
+import type { IMcpPluginContext } from '@cartago-git/mcp-core/public';
+
+describe('git parsers', () => {
+	it('parses porcelain status with branch', () => {
+		const status = parseStatus(
+			'## main...origin/main\n M src/a.ts\n?? src/b.ts'
+		);
+		expect(status.branch).toBe('main');
+		expect(status.clean).toBe(false);
+		expect(status.entries).toEqual([
+			{ status: 'M', path: 'src/a.ts' },
+			{ status: '??', path: 'src/b.ts' },
+		]);
+	});
+
+	it('treats no entries as clean', () => {
+		expect(parseStatus('## main').clean).toBe(true);
+	});
+
+	it('parses log lines', () => {
+		expect(parseLog('abc123\tfeat: x\ndef456\tfix: y')).toEqual([
+			{ hash: 'abc123', subject: 'feat: x' },
+			{ hash: 'def456', subject: 'fix: y' },
+		]);
+	});
+
+	it('threads an injected runner through the helpers', () => {
+		const run: IGitRunner = (args) => {
+			if (args[0] === 'status') return '## dev\n M f.ts';
+			if (args[0] === 'log') return 'h1\ts1';
+			return '';
+		};
+		expect(gitStatus(run).branch).toBe('dev');
+		expect(gitChanged(run)).toEqual(['f.ts']);
+		expect(gitLog(run, 5)[0]?.subject).toBe('s1');
+	});
+});
+
+describe('git plugin', () => {
+	it('registers the read-only git tools + knowledge', async () => {
+		const ctx = {
+			workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
+			corePaths: { cacheDir: '.cache/mcp-core', docsDir: 'docs/mcp-core' },
+			cacheDir: '.cache/mcp-core',
+			docsDir: 'docs/mcp-core',
+			pluginCacheDir: '.cache/mcp-core/git',
+			pluginDocsDir: 'docs/mcp-core/git',
+			namespacePrefix: 'git',
+			options: {},
+			args: {},
+		} satisfies IMcpPluginContext;
+		const reg = await plugin.register(ctx);
+		expect(reg.tools?.map((t) => t.id)).toEqual([
+			'git_status',
+			'git_changed',
+			'git_diff',
+			'git_log',
+		]);
+		expect(reg.knowledge?.[0]?.id).toBe('git-orientation');
+	});
+});

@@ -42,7 +42,10 @@
 			"@cartago-git/mcp-memory/public": [
 				"./plugins/memory/src/public/index.ts"
 			],
-			"@cartago-git/mcp-memory/*": ["./plugins/memory/src/*"]
+			"@cartago-git/mcp-memory/*": ["./plugins/memory/src/*"],
+			"@cartago-git/mcp-git": ["./plugins/git/src/index.ts"],
+			"@cartago-git/mcp-git/public": ["./plugins/git/src/public/index.ts"],
+			"@cartago-git/mcp-git/*": ["./plugins/git/src/*"]
 		}
 	},
 	"exclude": ["node_modules", "dist", "build", ".cache"]
