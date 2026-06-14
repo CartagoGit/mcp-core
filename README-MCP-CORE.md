@@ -159,6 +159,8 @@ from any other repo.
 - `packages/core` → **`@cartago-git/mcp-core`** (this package).
 - `plugins/proposals` → **`@cartago-git/mcp-proposals`** (proposal store +
   agent locks + task queue; the multi-agent "swarm" coordination layer).
+- `plugins/rules` → **`@cartago-git/mcp-rules`** (per-framework ESLint/TS
+  presets, per-area detection, enforcement modes; the project's config wins).
 
 ## Design principles (model/agent-agnostic, low-token)
 

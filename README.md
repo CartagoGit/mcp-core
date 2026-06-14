@@ -13,6 +13,7 @@ Project-agnostic core for building MCP servers + a CLI plugin loader, by
 |---|---|---|
 | `packages/core` | `@cartago-git/mcp-core` | The agnostic core + `mcp-core` CLI. |
 | `plugins/proposals` | `@cartago-git/mcp-proposals` | Proposal store + agent locks + task queue (swarm coordination). |
+| `plugins/rules` | `@cartago-git/mcp-rules` | Per-framework ESLint/TS presets + per-area detection + enforcement modes (project config wins). |
 
 ## Develop
 

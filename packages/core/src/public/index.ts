@@ -133,6 +133,7 @@ export {
 	recommendServerPlan,
 	PROJECT_PATTERN_CATALOG,
 	buildBootstrapToolRegistrations,
+	createWorkspaceFileReader,
 } from '../lib/bootstrap/index';
 export type {
 	IProjectAnalysis,

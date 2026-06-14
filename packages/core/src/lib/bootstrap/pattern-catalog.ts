@@ -47,7 +47,7 @@ export const PROJECT_PATTERN_CATALOG: Readonly<
 				description: 'Flags breaking changes to the exported surface.',
 			},
 		],
-		recommendedPlugins: [],
+		recommendedPlugins: ['rules'],
 		knowledgeHints: [
 			'Guard the public barrel; treat exports as a contract.',
 			'Run typecheck + tests as the gate before publish.',
@@ -76,7 +76,7 @@ export const PROJECT_PATTERN_CATALOG: Readonly<
 				description: 'Runs lint/test/build and returns a structured pass/fail report.',
 			},
 		],
-		recommendedPlugins: [],
+		recommendedPlugins: ['rules'],
 		knowledgeHints: [
 			'Prefer the framework idioms already in the repo.',
 			'Wire build + test as the gate.',
@@ -92,7 +92,7 @@ export const PROJECT_PATTERN_CATALOG: Readonly<
 				description: 'Validates a scene/level document against the engine schema.',
 			},
 		],
-		recommendedPlugins: ['proposals'],
+		recommendedPlugins: ['proposals', 'rules'],
 		knowledgeHints: [
 			'Author content through validated tools, never raw edits.',
 		],
@@ -107,7 +107,7 @@ export const PROJECT_PATTERN_CATALOG: Readonly<
 				description: 'Runs the per-scope validation matrix across packages.',
 			},
 		],
-		recommendedPlugins: ['proposals'],
+		recommendedPlugins: ['proposals', 'rules'],
 		knowledgeHints: [
 			'Scope gates per package; coordinate parallel work with the proposals plugin.',
 		],
