@@ -44,6 +44,7 @@ const KNOWN_KEYS = new Set([
 	'prefix',
 	'config',
 	'check',
+	'doctor',
 ]);
 
 /** Tokenize `--key=value`, `--key value` and `--flag` into a map. */

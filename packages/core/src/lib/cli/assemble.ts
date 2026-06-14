@@ -126,12 +126,18 @@ export const assembleCliConfig = async (
 	}
 
 	const validationMatrix = fileConfig.validationMatrix ?? { scopes: {} };
-	const hasProposals = loadResult.loaded.some(
-		(entry) => entry.plugin.name === 'proposals'
-	);
-	const recommendedNextAction = hasProposals
-		? `Call ${corePrefix}_overview, then ${corePrefix === 'mcpcore' ? 'proposals' : corePrefix}_auto_work to start working.`
-		: `Call ${corePrefix}_analyze_project to see what this project needs.`;
+	const isLoaded = (name: string): boolean =>
+		loadResult.loaded.some((entry) => entry.plugin.name === name);
+	const hasProposals = isLoaded('proposals');
+	const hasRules = isLoaded('rules');
+	const rulesClause = hasRules
+		? ' ALWAYS write new or modified code already compliant with the active rules (rules_get_rules) — it is the default, no need to be told.'
+		: '';
+	const recommendedNextAction =
+		(hasProposals
+			? `Call ${corePrefix}_overview, then proposals_auto_work to start working.`
+			: `Call ${corePrefix}_analyze_project to see what this project needs.`) +
+		rulesClause;
 
 	// Core meta-tools. `overview` first so it is the obvious entry point.
 	// `let` so the (lazily called) snapshot closure can read the final list.
@@ -270,8 +276,8 @@ export const runCli = async (
 ): Promise<void> => {
 	const args = parseCliArgs(argv, cwd);
 
-	// `--check`: print a diagnostic report and exit (no stdio transport).
-	if (args.tokens['check'] !== undefined) {
+	// `--check`/`--doctor`: print a diagnostic report and exit (no stdio).
+	if (args.tokens['check'] !== undefined || args.tokens['doctor'] !== undefined) {
 		const report = await runDoctor(args);
 		process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 		if (!report.ok) process.exitCode = 1;

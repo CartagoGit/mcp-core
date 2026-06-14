@@ -486,3 +486,134 @@ See \`PLUGINS-MCP-CORE.md\` at the repo root for the full plugin guide.
 		},
 	];
 };
+
+// ---------------------------------------------------------------------------
+// MCP client generator — "tools to create clients"
+// ---------------------------------------------------------------------------
+
+export interface IScaffoldClientOptions {
+	/** Client id, e.g. `acme`. */
+	readonly clientName: string;
+	/** One-line description of the client. */
+	readonly description: string;
+	/** npm scope (default `@cartago-git`). */
+	readonly scope?: string;
+	/** Command the client spawns to reach the server (default `bunx`). */
+	readonly serverCommand?: string;
+	/** Args for that command (default loads mcp-core with no plugins). */
+	readonly serverArgs?: readonly string[];
+}
+
+/**
+ * Generate a reusable MCP **client** library: it connects (stdio) to an
+ * MCP server and exposes its tools as typed functions, so other
+ * libraries — and the agents that use them — can consume that server
+ * programmatically. This is the counterpart of the host/server
+ * scaffolds: build servers with `kind:host`, build consumers with
+ * `kind:client`.
+ */
+export const scaffoldClientFiles = (
+	options: IScaffoldClientOptions
+): readonly IScaffoldedFile[] => {
+	const id = kebab(options.clientName);
+	const scope = options.scope ?? '@cartago-git';
+	const pkg = `${scope}/mcp-client-${id}`;
+	const fn = pascal(id);
+	const safeDescription = options.description.replace(/'/g, '');
+	const command = options.serverCommand ?? 'bunx';
+	const args = options.serverArgs ?? ['@cartago-git/mcp-core'];
+	return [
+		{
+			path: `clients/${id}/package.json`,
+			content: `${JSON.stringify(
+				{
+					name: pkg,
+					version: '0.1.0',
+					type: 'module',
+					description: safeDescription,
+					license: 'MIT',
+					main: './src/index.ts',
+					exports: { '.': './src/index.ts' },
+					dependencies: { '@modelcontextprotocol/sdk': '^1.29.0' },
+				},
+				null,
+				'\t'
+			)}\n`,
+		},
+		{
+			path: `clients/${id}/src/index.ts`,
+			content: `import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+
+/**
+ * ${safeDescription}
+ *
+ * A thin, reusable wrapper around an MCP server: connect, discover and
+ * call its tools as plain async functions. Other libraries and agents
+ * import this instead of speaking MCP directly.
+ */
+export interface I${fn}ClientOptions {
+	/** Command to launch the server (default '${command}'). */
+	readonly command?: string;
+	/** Args for that command. */
+	readonly args?: readonly string[];
+}
+
+export interface I${fn}Client {
+	readonly raw: Client;
+	listTools(): Promise<unknown>;
+	callTool(name: string, args?: Record<string, unknown>): Promise<unknown>;
+	close(): Promise<void>;
+}
+
+export const create${fn}Client = async (
+	options: I${fn}ClientOptions = {}
+): Promise<I${fn}Client> => {
+	const transport = new StdioClientTransport({
+		command: options.command ?? '${command}',
+		args: [...(options.args ?? ${JSON.stringify(args)})],
+	});
+	const client = new Client(
+		{ name: '${id}-client', version: '0.1.0' },
+		{ capabilities: {} }
+	);
+	await client.connect(transport);
+	return {
+		raw: client,
+		listTools: () => client.listTools(),
+		callTool: (name, args = {}) =>
+			client.callTool({ name, arguments: args }),
+		close: () => client.close(),
+	};
+};
+`,
+		},
+		{
+			path: `clients/${id}/tsconfig.json`,
+			content: `${JSON.stringify(
+				{
+					extends: '../../tsconfig.base.json',
+					include: ['src/**/*'],
+				},
+				null,
+				'\t'
+			)}\n`,
+		},
+		{
+			path: `clients/${id}/README.md`,
+			content: `# ${pkg}
+
+${safeDescription}
+
+\`\`\`ts
+import { create${fn}Client } from '${pkg}';
+
+const mcp = await create${fn}Client();
+const tools = await mcp.listTools();
+const result = await mcp.callTool('mcpcore_overview');
+await mcp.close();
+\`\`\`
+`,
+		},
+	];
+};

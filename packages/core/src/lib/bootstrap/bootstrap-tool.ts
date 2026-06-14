@@ -5,6 +5,7 @@ import { z } from 'zod';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import {
+	scaffoldClientFiles,
 	scaffoldHostProject,
 	scaffoldPluginFiles,
 } from '../scaffold/scaffold-host';
@@ -47,11 +48,15 @@ const ANALYZE_SCHEMA = z.object({
 });
 
 const CREATE_SCHEMA = z.object({
-	kind: z.enum(['host', 'plugin']).optional().describe('What to scaffold.'),
+	kind: z
+		.enum(['host', 'plugin', 'client'])
+		.optional()
+		.describe('What to scaffold.'),
 	projectName: z.string().optional(),
 	namespacePrefix: z.string().optional(),
 	serverPackageName: z.string().optional(),
 	pluginName: z.string().optional().describe('Plugin id (kind "plugin").'),
+	clientName: z.string().optional().describe('Client id (kind "client").'),
 	description: z.string().optional(),
 });
 
@@ -116,7 +121,7 @@ export const buildBootstrapToolRegistrations = (
 	const create: IToolRegistration = {
 		id: 'create_server',
 		summary:
-			'Generate files for a project-specific server or a new plugin from a plan (returns files for you to write).',
+			'Generate files for a project-specific server, plugin or MCP client from a plan (returns files for you to write).',
 		tags: ['bootstrap'],
 		register: async (server) => {
 			server.registerTool(
@@ -135,6 +140,16 @@ export const buildBootstrapToolRegistrations = (
 								args.description ?? 'TODO: describe this plugin.',
 						});
 						return json({ kind: 'plugin', files });
+					}
+					if (args.kind === 'client') {
+						const files = scaffoldClientFiles({
+							clientName:
+								args.clientName ?? args.pluginName ?? 'example',
+							description:
+								args.description ??
+								'TODO: describe this MCP client.',
+						});
+						return json({ kind: 'client', files });
 					}
 					const files = scaffoldHostProject({
 						projectName: args.projectName ?? namespacePrefix,

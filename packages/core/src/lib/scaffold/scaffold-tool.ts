@@ -13,6 +13,7 @@ import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-p
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import {
 	scaffoldAgentFile,
+	scaffoldClientFiles,
 	scaffoldHostProject,
 	scaffoldPluginFiles,
 	scaffoldPromptFile,
@@ -35,7 +36,7 @@ export interface IScaffoldToolOptions {
 
 export const SCAFFOLD_INPUT_SCHEMA = z.object({
 	kind: z
-		.enum(['tool', 'prompt', 'skill', 'agent', 'host', 'plugin'])
+		.enum(['tool', 'prompt', 'skill', 'agent', 'host', 'plugin', 'client'])
 		.describe('What to generate.'),
 	name: z
 		.string()
@@ -140,6 +141,14 @@ export const buildScaffoldReport = (
 			else
 				files = scaffoldPluginFiles({
 					pluginName: name,
+					description,
+				});
+			break;
+		case 'client':
+			if (name.length === 0) errors.push('kind "client" requires name');
+			else
+				files = scaffoldClientFiles({
+					clientName: name,
 					description,
 				});
 			break;

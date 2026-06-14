@@ -81,6 +81,7 @@ export type {
 // --- scaffolding kit ("tools to create tools/plugins") ---------------------
 export {
 	scaffoldAgentFile,
+	scaffoldClientFiles,
 	scaffoldHostConfigFile,
 	scaffoldHostProject,
 	scaffoldInstructionsFile,
@@ -92,6 +93,7 @@ export {
 } from '../lib/scaffold/scaffold-host';
 export type {
 	IScaffoldAgentSlot,
+	IScaffoldClientOptions,
 	IScaffoldHostOptions,
 	IScaffoldPluginOptions,
 	IScaffoldedFile,

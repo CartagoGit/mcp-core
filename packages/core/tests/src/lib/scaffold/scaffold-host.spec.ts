@@ -142,4 +142,29 @@ describe('scaffold tool report (p97)', () => {
 		expect(report.errors[0]).toContain('requires name');
 		expect(report.written).toEqual([]);
 	});
+
+	it('scaffolds a plugin and an MCP client', () => {
+		const plugin = buildScaffoldReport(options, {
+			kind: 'plugin',
+			name: 'pepegrillo',
+			description: 'Conscience plugin.',
+			dryRun: true,
+		});
+		expect(plugin.files.map((f) => f.path)).toContain(
+			'plugins/pepegrillo/src/index.ts'
+		);
+		const client = buildScaffoldReport(options, {
+			kind: 'client',
+			name: 'acme',
+			description: 'Acme MCP client.',
+			dryRun: true,
+		});
+		expect(client.files.map((f) => f.path)).toContain(
+			'clients/acme/src/index.ts'
+		);
+		const entry = client.files.find((f) =>
+			f.path.endsWith('clients/acme/src/index.ts')
+		);
+		expect(entry?.content).toContain('createAcmeClient');
+	});
 });

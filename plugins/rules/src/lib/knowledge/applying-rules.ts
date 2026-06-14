@@ -12,6 +12,8 @@ export const buildApplyingRulesKnowledge = (
 	body: [
 		'# Applying lint/type rules',
 		'',
+		'**Default behaviour (no need to be told): every piece of code you create or modify must already follow this project’s rules.** Apply them as you write, not as an afterthought.',
+		'',
 		`Enforcement mode: **${mode}** — ${RULES_MODE_GUIDANCE[mode]}`,
 		'',
 		'How rules are resolved:',
