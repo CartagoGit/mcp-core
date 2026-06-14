@@ -16,6 +16,7 @@ Project-agnostic core for building MCP servers + a CLI plugin loader, by
 | `plugins/rules` | `@cartago-git/mcp-rules` | Per-framework ESLint/TS presets + per-area detection + enforcement modes (project config wins). |
 | `plugins/memory` | `@cartago-git/mcp-memory` | Persistent project notes (save/recall/list/forget) for cross-session continuity. |
 | `plugins/git` | `@cartago-git/mcp-git` | Read-only git orientation: status, changed files, diff stat, log. |
+| `plugins/quality` | `@cartago-git/mcp-quality` | Quality-gate runner: executes lint/test/build per scope, structured pass/fail. |
 
 ## Develop
 

@@ -36,6 +36,8 @@ describe('@cartago-git/mcp-proposals plugin', () => {
 			'agent_names',
 			'continue_proposal',
 			'auto_work',
+			'plan',
+			'delegate',
 		]);
 		expect(registrations.knowledge?.[0]?.id).toBe('proposals-workflow');
 	});
@@ -67,6 +69,8 @@ describe('@cartago-git/mcp-proposals plugin', () => {
 			'work_agent_names',
 			'work_continue_proposal',
 			'work_auto_work',
+			'work_plan',
+			'work_delegate',
 		]);
 	});
 });

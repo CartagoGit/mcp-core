@@ -66,6 +66,11 @@ export {
 } from '../lib/tools/auto-work.tool';
 export type { IAutoWorkToolOptions } from '../lib/tools/auto-work.tool';
 export {
+	buildPlanRegistration,
+	buildDelegateRegistration,
+} from '../lib/tools/orchestration.tool';
+export type { IDelegateToolOptions } from '../lib/tools/orchestration.tool';
+export {
 	buildProposalWorkflow,
 } from '../lib/knowledge/proposal-workflow';
 export type { IProposalWorkflow } from '../lib/knowledge/proposal-workflow';

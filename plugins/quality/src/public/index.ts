@@ -1,0 +1,21 @@
+/**
+ * Public surface of `@cartago-git/mcp-quality`. The default export (in
+ * `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes the
+ * runner, scope resolution and tool builder for programmatic reuse.
+ */
+export { default } from '../index';
+
+export {
+	createCommandRunner,
+	runScope,
+} from '../lib/runner';
+export type {
+	ICommandRunner,
+	ICommandResult,
+	IScopeResult,
+	IScopeCommand,
+} from '../lib/runner';
+export { resolveScopes } from '../lib/scopes';
+export type { IScopeMap } from '../lib/scopes';
+export { buildQualityToolRegistrations } from '../lib/tools';
+export type { IQualityToolOptions } from '../lib/tools';

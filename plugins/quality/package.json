@@ -1,0 +1,33 @@
+{
+	"name": "@cartago-git/mcp-quality",
+	"version": "0.1.0",
+	"type": "module",
+	"description": "Quality-gate runner plugin for @cartago-git/mcp-core: executes the project's validation commands (lint/test/build/typecheck) per scope and returns a structured pass/fail report. Load with `mcp-core --plugins=quality`.",
+	"author": "Cartago",
+	"license": "MIT",
+	"keywords": ["mcp", "model-context-protocol", "quality", "ci", "lint", "test", "agent", "ai", "cartago", "plugin"],
+	"main": "./src/index.ts",
+	"files": ["src", "README.md", "LICENSE"],
+	"exports": {
+		".": "./src/index.ts",
+		"./public": "./src/public/index.ts",
+		"./lib/*": "./src/lib/*.ts"
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit"
+	},
+	"peerDependencies": {
+		"@cartago-git/mcp-core": "^0.1.0"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@cartago-git/mcp-core": "workspace:*",
+		"@types/bun": "latest",
+		"typescript": "^6.0.3",
+		"vitest": "^4.1.8"
+	}
+}

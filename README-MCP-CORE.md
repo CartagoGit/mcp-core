@@ -50,7 +50,9 @@ scaffolding tools.
 | `--name=NAME` | `mcp-core` | Server name advertised over MCP. |
 | `--prefix=NS` | `mcpcore` | Namespace for the core's own tools (`<NS>_analyze_project`, …). |
 | `--config=FILE` | `mcp-core.config.json` | Config file with per-plugin values (see below). |
-| `--check` | — | Doctor mode: validate config, resolve/load plugins and print a report (tools/prompts/resources counts, errors) **without** starting the server. |
+| `--check` / `--doctor` | — | Doctor mode: validate config, resolve/load plugins and print a report (tools/prompts/resources counts, errors) **without** starting the server. |
+| `--mcp-server-create=false` | (on) | Disable the first-start project-server blueprint. |
+| `--mcp-server-tests=false` | (on) | Omit tests from the generated blueprint. |
 | `--<anything>=value` | — | Forwarded to every plugin via `ctx.args`. |
 
 ```bash
@@ -92,9 +94,16 @@ never crashes the server.
   structured analysis **plus a recommended server plan** (project type incl.
   python/go/rust/monorepo, tools, plugins, validation commands, detected CI and
   agent configs, and a ready-to-paste `mcp.json`).
+- **`<prefix>_plan_mcp_server`** — read-only. Returns an **exhaustive** blueprint
+  for a project-specific MCP server (every tool/prompt/skill/agent + tests) and
+  the files to write. If a server already exists, the notes explain how to
+  integrate it with mcp-core instead of replacing it. On first start mcp-core
+  writes this blueprint to the cache automatically (disable with
+  `--mcp-server-create=false`; omit tests with `--mcp-server-tests=false`).
 - **`<prefix>_create_server`** — turns a plan into the files for a
-  project-specific server (or a new plugin). Returns the files **for the agent
-  to write**; it never touches disk.
+  project-specific server, a **plugin**, or an **MCP client** (`kind: host |
+  plugin | client`). Returns the files **for the agent to write**; never touches
+  disk.
 - **`<prefix>_scaffold`** — generates a single tool / prompt / skill / agent /
   host project / **plugin** from templates. Dry-run by default; never
   overwrites.
@@ -165,6 +174,8 @@ from any other repo.
   for cross-session continuity, minimal tokens).
 - `plugins/git` → **`@cartago-git/mcp-git`** (read-only git orientation:
   status / changed / diff / log).
+- `plugins/quality` → **`@cartago-git/mcp-quality`** (runs the project quality
+  gates per scope and returns structured pass/fail).
 
 ## Design principles (model/agent-agnostic, low-token)
 

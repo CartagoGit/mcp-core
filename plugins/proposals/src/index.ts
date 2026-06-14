@@ -6,6 +6,11 @@ import { buildAgentLockRegistration } from './lib/tools/agent-lock.tool';
 import { buildAgentNamesRegistration } from './lib/tools/agent-names.tool';
 import { buildAutoWorkRegistration } from './lib/tools/auto-work.tool';
 import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
+import {
+	buildDelegateRegistration,
+	buildPlanRegistration,
+} from './lib/tools/orchestration.tool';
+import type { IAgentNamesToolOptions } from './lib/tools/agent-names.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
 import { buildSyncProposalsRegistration } from './lib/tools/sync-proposals.tool';
@@ -48,6 +53,17 @@ export default definePlugin({
 		const abs = (relativePath: string): string =>
 			ctx.workspace.resolve(relativePath);
 
+		const agentNamesOptions: IAgentNamesToolOptions = {
+			namespacePrefix: ctx.namespacePrefix,
+			registryPathAbs: abs(layout.subagentRegistryFile),
+			lockPathAbs: abs(layout.lockFile),
+			queuePathAbs: abs(layout.taskQueueFile),
+			closedTasksPathAbs: abs(layout.closedTasksFile),
+			...(Array.isArray(ctx.options['namePool'])
+				? { pool: ctx.options['namePool'] as string[] }
+				: {}),
+		};
+
 		return {
 			tools: [
 				buildAgentLockRegistration({
@@ -77,16 +93,7 @@ export default definePlugin({
 					digestPathAbs: abs(layout.roundContextDigestFile),
 					coreDocs: ['README.md', layout.proposalIndexFile],
 				}),
-				buildAgentNamesRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					registryPathAbs: abs(layout.subagentRegistryFile),
-					lockPathAbs: abs(layout.lockFile),
-					queuePathAbs: abs(layout.taskQueueFile),
-					closedTasksPathAbs: abs(layout.closedTasksFile),
-					...(Array.isArray(ctx.options['namePool'])
-						? { pool: ctx.options['namePool'] as string[] }
-						: {}),
-				}),
+				buildAgentNamesRegistration(agentNamesOptions),
 				buildContinueProposalRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					indexPathAbs: abs(layout.proposalIndexFile),
@@ -117,6 +124,12 @@ export default definePlugin({
 								] as string,
 							}
 						: {}),
+				}),
+				buildPlanRegistration(ctx.namespacePrefix),
+				buildDelegateRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					agentNames: agentNamesOptions,
+					lockPathAbs: abs(layout.lockFile),
 				}),
 			],
 			prompts: [
