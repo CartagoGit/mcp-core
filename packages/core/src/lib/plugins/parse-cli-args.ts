@@ -43,6 +43,7 @@ const KNOWN_KEYS = new Set([
 	'serverVersion',
 	'prefix',
 	'config',
+	'check',
 ]);
 
 /** Tokenize `--key=value`, `--key value` and `--flag` into a map. */

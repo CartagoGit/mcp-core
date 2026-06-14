@@ -12,6 +12,7 @@ import type {
 } from '../contracts/interfaces/tool-registration.interface';
 import {
 	DEFAULT_CONFIG_FILENAME,
+	diagnoseConfigFile,
 	parseConfigFile,
 	pluginConfigFor,
 } from '../plugins/load-config-file';
@@ -22,6 +23,15 @@ import { parseCliArgs } from '../plugins/parse-cli-args';
 import type { IMcpCoreCliArgs } from '../plugins/parse-cli-args';
 import { buildScaffoldToolRegistration } from '../scaffold/scaffold-tool';
 import { createMcpServer } from '../server/create-mcp-server';
+import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
+import { buildKnowledgeToolRegistration } from '../tools/knowledge-tool';
+import { buildOverviewToolRegistration } from '../tools/overview-tool';
+import type {
+	IOverviewSnapshot,
+	IOverviewToolEntry,
+} from '../tools/overview-tool';
+import { buildStartPromptRegistration } from '../tools/start-prompt';
+import { buildValidationMatrixToolRegistration } from '../tools/validation-matrix-tool';
 import { createWorkspacePathProvider } from '../workspace/create-workspace-path-provider';
 
 const joinRel = (base: string, child: string): string =>
@@ -96,7 +106,64 @@ export const assembleCliConfig = async (
 		...(deps.import ? { import: deps.import } : {}),
 	});
 
-	const tools: IToolRegistration[] = [
+	const prompts: IPromptRegistration[] = [];
+	const resources: IResourceRegistration[] = [];
+	const knowledge: IKnowledgeEntry[] = [];
+	const pluginToolEntries: IOverviewToolEntry[] = [];
+
+	for (const { plugin, registrations } of loadResult.loaded) {
+		const ns = pluginConfigFor(fileConfig, plugin.name).prefix ?? plugin.name;
+		if (registrations.prompts) prompts.push(...registrations.prompts);
+		if (registrations.resources) resources.push(...registrations.resources);
+		if (registrations.knowledge) knowledge.push(...registrations.knowledge);
+		for (const tool of registrations.tools ?? []) {
+			pluginToolEntries.push({
+				name: `${ns}_${tool.id}`,
+				summary: tool.summary,
+				tags: tool.tags,
+			});
+		}
+	}
+
+	const validationMatrix = fileConfig.validationMatrix ?? { scopes: {} };
+	const hasProposals = loadResult.loaded.some(
+		(entry) => entry.plugin.name === 'proposals'
+	);
+	const recommendedNextAction = hasProposals
+		? `Call ${corePrefix}_overview, then ${corePrefix === 'mcpcore' ? 'proposals' : corePrefix}_auto_work to start working.`
+		: `Call ${corePrefix}_analyze_project to see what this project needs.`;
+
+	// Core meta-tools. `overview` first so it is the obvious entry point.
+	// `let` so the (lazily called) snapshot closure can read the final list.
+	let coreTools: IToolRegistration[] = [];
+	const buildSnapshot = (): IOverviewSnapshot => ({
+		server: { name: args.serverName, version: args.serverVersion },
+		namespacePrefix: corePrefix,
+		corePaths,
+		plugins: loadResult.loaded.map((entry) => ({
+			name: entry.plugin.name,
+			version: entry.plugin.version,
+			describe: entry.plugin.describe,
+		})),
+		tools: [
+			...coreTools.map((reg) => ({
+				name: `${corePrefix}_${reg.id}`,
+				summary: reg.summary,
+				tags: reg.tags,
+			})),
+			...pluginToolEntries,
+		],
+		knowledge: knowledge.map((entry) => ({
+			id: entry.id,
+			title: entry.title,
+		})),
+		recommendedNextAction,
+	});
+
+	coreTools = [
+		buildOverviewToolRegistration(corePrefix, buildSnapshot),
+		buildKnowledgeToolRegistration(corePrefix, () => knowledge),
+		buildValidationMatrixToolRegistration(corePrefix, () => validationMatrix),
 		...buildBootstrapToolRegistrations({
 			workspace,
 			namespacePrefix: corePrefix,
@@ -108,16 +175,19 @@ export const assembleCliConfig = async (
 			serverPackageName: '@cartago-git/mcp-core',
 		}),
 	];
-	const prompts: IPromptRegistration[] = [];
-	const resources: IResourceRegistration[] = [];
-	const knowledge: IKnowledgeEntry[] = [];
 
+	const tools: IToolRegistration[] = [...coreTools];
 	for (const { registrations } of loadResult.loaded) {
 		if (registrations.tools) tools.push(...registrations.tools);
-		if (registrations.prompts) prompts.push(...registrations.prompts);
-		if (registrations.resources) resources.push(...registrations.resources);
-		if (registrations.knowledge) knowledge.push(...registrations.knowledge);
 	}
+
+	// Surface knowledge as native MCP resources too (list/read/cache).
+	resources.push(...buildKnowledgeResourceRegistrations(knowledge));
+
+	// A "start" workflow prompt for one-click orientation in clients.
+	prompts.unshift(
+		buildStartPromptRegistration(corePrefix, () => recommendedNextAction)
+	);
 
 	const config: IMcpCoreHostConfig = {
 		metadata: {
@@ -128,6 +198,7 @@ export const assembleCliConfig = async (
 		namespacePrefix: corePrefix,
 		workspace,
 		corePaths,
+		validationMatrix,
 		knowledge,
 		extraTools: tools,
 		extraPrompts: prompts,
@@ -137,12 +208,76 @@ export const assembleCliConfig = async (
 	return { config, loadResult };
 };
 
+export interface IDoctorReport {
+	readonly ok: boolean;
+	readonly configPath: string;
+	readonly config: { readonly present: boolean; readonly issues: readonly string[] };
+	readonly paths: { readonly cacheDir: string; readonly docsDir: string };
+	readonly plugins: {
+		readonly requested: readonly string[];
+		readonly loaded: readonly string[];
+		readonly errors: readonly string[];
+	};
+	readonly counts: {
+		readonly tools: number;
+		readonly prompts: number;
+		readonly resources: number;
+	};
+}
+
+/**
+ * `--check` diagnostics: validate the config file, resolve and load
+ * every requested plugin, and report what the server WOULD expose —
+ * without starting the stdio transport. The fast way to debug a setup
+ * in any environment before wiring it into a client.
+ */
+export const runDoctor = async (
+	args: IMcpCoreCliArgs,
+	deps: IAssembleCliDeps = {}
+): Promise<IDoctorReport> => {
+	const readFile =
+		deps.readFile ??
+		((absolutePath: string) =>
+			existsSync(absolutePath)
+				? readFileSync(absolutePath, 'utf8')
+				: undefined);
+	const configPath =
+		args.configPath ?? join(args.workspace, DEFAULT_CONFIG_FILENAME);
+	const configDiag = diagnoseConfigFile(readFile(configPath));
+	const { config, loadResult } = await assembleCliConfig(args, deps);
+	return {
+		ok: configDiag.issues.length === 0 && loadResult.errors.length === 0,
+		configPath,
+		config: configDiag,
+		paths: config.corePaths ?? { cacheDir: args.cacheDir, docsDir: args.docsDir },
+		plugins: {
+			requested: args.plugins,
+			loaded: loadResult.loaded.map((entry) => entry.plugin.name),
+			errors: loadResult.errors.map((error) => error.message),
+		},
+		counts: {
+			tools: config.extraTools?.length ?? 0,
+			prompts: config.extraPrompts?.length ?? 0,
+			resources: config.extraResources?.length ?? 0,
+		},
+	};
+};
+
 /** Entry point for the `mcp-core` bin. */
 export const runCli = async (
 	argv: readonly string[],
 	cwd: string
 ): Promise<void> => {
 	const args = parseCliArgs(argv, cwd);
+
+	// `--check`: print a diagnostic report and exit (no stdio transport).
+	if (args.tokens['check'] !== undefined) {
+		const report = await runDoctor(args);
+		process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+		if (!report.ok) process.exitCode = 1;
+		return;
+	}
+
 	const { config, loadResult } = await assembleCliConfig(args);
 	for (const error of loadResult.errors) {
 		// stderr only: stdout is the MCP stdio transport.

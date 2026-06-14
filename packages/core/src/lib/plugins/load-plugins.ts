@@ -110,9 +110,18 @@ export const loadPlugins = async (
 			continue;
 		}
 		try {
-			const registrations = await plugin.register(
-				options.buildContext(plugin.name)
-			);
+			const ctx = options.buildContext(plugin.name);
+			if (plugin.optionsSchema) {
+				const parsed = plugin.optionsSchema.safeParse(ctx.options);
+				if (!parsed.success) {
+					errors.push({
+						specifier,
+						message: `plugin "${plugin.name}" rejected its options (mcp-core.config.json → plugins.${plugin.name}.options).`,
+					});
+					continue;
+				}
+			}
+			const registrations = await plugin.register(ctx);
 			loaded.push({ specifier, resolved, plugin, registrations });
 		} catch (error) {
 			errors.push({

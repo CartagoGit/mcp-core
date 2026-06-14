@@ -55,7 +55,7 @@ type IResult = {
 };
 
 const json = (value: unknown, isError = false): IResult => ({
-	content: [{ type: 'text', text: JSON.stringify(value, null, '\t') }],
+	content: [{ type: 'text', text: JSON.stringify(value) }],
 	...(isError ? { isError: true } : {}),
 });
 
@@ -385,6 +385,9 @@ export const buildAgentNamesRegistration = (
 	options: IAgentNamesToolOptions
 ): IToolRegistration => ({
 	id: 'agent_names',
+	summary:
+		'Name the whole agent tree (orchestrator included): assign/release/heartbeat/list/tree/who_uses/gc/reconcile.',
+	tags: ['coordination'],
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_agent_names`,

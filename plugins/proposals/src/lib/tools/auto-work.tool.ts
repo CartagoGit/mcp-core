@@ -13,7 +13,7 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 type IResult = { content: Array<{ type: 'text'; text: string }> };
 
 const json = (value: unknown): IResult => ({
-	content: [{ type: 'text', text: JSON.stringify(value, null, '\t') }],
+	content: [{ type: 'text', text: JSON.stringify(value) }],
 });
 
 /**
@@ -70,6 +70,9 @@ export const buildAutoWorkRegistration = (
 	options: IAutoWorkToolOptions
 ): IToolRegistration => ({
 	id: 'auto_work',
+	summary:
+		'One call → next proposal + a compact ordered action plan (claim → slice → validate → sync → release).',
+	tags: ['work'],
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_auto_work`,

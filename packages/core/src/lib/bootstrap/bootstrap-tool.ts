@@ -57,7 +57,7 @@ const CREATE_SCHEMA = z.object({
 
 const json = (value: unknown) => ({
 	content: [
-		{ type: 'text' as const, text: JSON.stringify(value, null, '\t') },
+		{ type: 'text' as const, text: JSON.stringify(value) },
 	],
 });
 
@@ -77,6 +77,9 @@ export const buildBootstrapToolRegistrations = (
 
 	const analyze: IToolRegistration = {
 		id: 'analyze_project',
+		summary:
+			'Read-only: inspect the project and recommend an MCP server plan (type, tools, plugins, mcp.json).',
+		tags: ['orientation', 'bootstrap'],
 		register: async (server) => {
 			server.registerTool(
 				`${prefix}_analyze_project`,
@@ -112,6 +115,9 @@ export const buildBootstrapToolRegistrations = (
 
 	const create: IToolRegistration = {
 		id: 'create_server',
+		summary:
+			'Generate files for a project-specific server or a new plugin from a plan (returns files for you to write).',
+		tags: ['bootstrap'],
 		register: async (server) => {
 			server.registerTool(
 				`${prefix}_create_server`,

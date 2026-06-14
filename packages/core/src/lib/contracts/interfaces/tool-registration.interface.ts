@@ -15,6 +15,14 @@ export interface IToolRegistration {
 	 * at the end of the sequence, preserving declaration order.
 	 */
 	readonly registerAfter?: string | undefined;
+	/**
+	 * One-line capability summary surfaced by the `overview` tool so any
+	 * agent can map the server in a single call. Optional but
+	 * recommended; keep it short and action-oriented.
+	 */
+	readonly summary?: string | undefined;
+	/** Optional grouping tags, e.g. `['coordination']`, `['lazy']`. */
+	readonly tags?: readonly string[] | undefined;
 	register(server: McpServer): Promise<void>;
 }
 

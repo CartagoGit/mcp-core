@@ -173,6 +173,9 @@ export const buildScaffoldToolRegistration = (
 	options: IScaffoldToolOptions
 ): IToolRegistration => ({
 	id: 'scaffold',
+	summary:
+		'Generate a tool / prompt / skill / agent / host project / plugin from templates (dry-run by default).',
+	tags: ['bootstrap'],
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_scaffold`,

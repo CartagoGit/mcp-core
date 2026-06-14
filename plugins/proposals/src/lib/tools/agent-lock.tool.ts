@@ -24,6 +24,9 @@ export const buildAgentLockRegistration = (
 	const toolName = `${options.namespacePrefix}_agent_lock`;
 	return {
 		id: 'agent_lock',
+		summary:
+			'Claim files before editing, release after (claim/release/status/gc). The write-ownership primitive.',
+		tags: ['coordination'],
 		register: async (server) => {
 			server.registerTool(
 				toolName,

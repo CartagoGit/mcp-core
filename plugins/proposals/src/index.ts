@@ -110,6 +110,35 @@ export default definePlugin({
 						: {}),
 				}),
 			],
+			prompts: [
+				{
+					id: 'work',
+					register: async (server) => {
+						server.registerPrompt(
+							`${ctx.namespacePrefix}_work`,
+							{
+								description:
+									'Start (or continue) proposal work efficiently in this project.',
+							},
+							async () => ({
+								messages: [
+									{
+										role: 'user' as const,
+										content: {
+											type: 'text' as const,
+											text: [
+												`Call \`${ctx.namespacePrefix}_auto_work\` to get the next proposal and a step plan.`,
+												'Then: claim files with `agent_lock`, do one atomic slice, validate, `sync_proposals`, release the lock.',
+												'Report `lock-conflict` instead of retrying a blocked claim. Keep it small and low-token.',
+											].join('\n'),
+										},
+									},
+								],
+							})
+						);
+					},
+				},
+			],
 			knowledge: [
 				{
 					id: 'proposals-workflow',

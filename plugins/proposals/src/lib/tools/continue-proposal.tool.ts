@@ -35,7 +35,7 @@ export interface IContinueProposalArgs {
 type IResult = { content: Array<{ type: 'text'; text: string }> };
 
 const json = (value: unknown): IResult => ({
-	content: [{ type: 'text', text: JSON.stringify(value, null, '\t') }],
+	content: [{ type: 'text', text: JSON.stringify(value) }],
 });
 
 const ACTIONABLE = new Set(['pending', 'ready', 'in_progress']);
@@ -258,6 +258,9 @@ export const buildContinueProposalRegistration = (
 	options: IContinueProposalToolOptions
 ): IToolRegistration => ({
 	id: 'continue_proposal',
+	summary:
+		'Next proposal by cascade (mode auto), or a parallel slice plan/claim (modes plan/claim).',
+	tags: ['work'],
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_continue_proposal`,

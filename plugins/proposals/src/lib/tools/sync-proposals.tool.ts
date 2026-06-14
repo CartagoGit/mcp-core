@@ -18,6 +18,9 @@ export const buildSyncProposalsRegistration = (
 	options: ISyncProposalsToolOptions
 ): IToolRegistration => ({
 	id: 'sync_proposals',
+	summary:
+		'Rebuild the proposal index from the .md files (run after creating/renaming proposals).',
+	tags: ['lazy'],
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_sync_proposals`,

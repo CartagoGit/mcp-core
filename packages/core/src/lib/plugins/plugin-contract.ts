@@ -67,6 +67,18 @@ export interface IMcpPlugin {
 	readonly version?: string;
 	/** One-line, model-agnostic description of what the plugin adds. */
 	readonly describe?: string;
+	/**
+	 * Optional schema validating `ctx.options` (from the config file).
+	 * Any object exposing zod's `safeParse` works — declaring it lets
+	 * the loader reject misconfigured options with a clear error before
+	 * `register` runs, and the `--check` doctor report it.
+	 */
+	readonly optionsSchema?: {
+		safeParse(value: unknown): {
+			success: boolean;
+			error?: unknown;
+		};
+	};
 	register(
 		ctx: IMcpPluginContext
 	): IMcpPluginRegistrations | Promise<IMcpPluginRegistrations>;

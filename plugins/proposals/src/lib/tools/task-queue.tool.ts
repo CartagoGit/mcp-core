@@ -24,6 +24,9 @@ export const buildTaskQueueRegistration = (
 	options: ITaskQueueToolOptions
 ): IToolRegistration => ({
 	id: 'task_queue',
+	summary:
+		'Multi-agent coordination queue: enqueue/dequeue/subscribe/report (waitFor, observe, backpressure).',
+	tags: ['coordination'],
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_task_queue`,

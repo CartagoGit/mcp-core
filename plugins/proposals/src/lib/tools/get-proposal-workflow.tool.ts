@@ -17,6 +17,9 @@ export const buildGetProposalWorkflowRegistration = (
 	options: IGetProposalWorkflowToolOptions
 ): IToolRegistration => ({
 	id: 'get_proposal_workflow',
+	summary:
+		'Returns families, locations, naming, rules and the proposal template (as JSON).',
+	tags: ['orientation', 'lazy'],
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_get_proposal_workflow`,

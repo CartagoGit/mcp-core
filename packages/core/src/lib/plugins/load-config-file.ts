@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 /**
  * Per-plugin configuration loaded from `mcp-core.config.json`. This is
  * the structured way to pass values to plugins: each plugin gets a
@@ -23,11 +25,77 @@ export interface IMcpCorePluginConfig {
 export interface IMcpCoreConfigFile {
 	readonly cacheDir?: string;
 	readonly docsDir?: string;
+	/** Quality-gate commands per scope, surfaced by `get_validation_matrix`. */
+	readonly validationMatrix?: {
+		readonly scopes: Readonly<
+			Record<string, ReadonlyArray<{ command: string; expect: string }>>
+		>;
+	};
 	readonly plugins?: Readonly<Record<string, IMcpCorePluginConfig>>;
 }
 
 /** Default config file name looked up at the workspace root. */
 export const DEFAULT_CONFIG_FILENAME = 'mcp-core.config.json';
+
+/** Structural schema for the config file (used by `--check`). */
+export const CONFIG_FILE_SCHEMA = z
+	.object({
+		cacheDir: z.string().optional(),
+		docsDir: z.string().optional(),
+		validationMatrix: z
+			.object({
+				scopes: z.record(
+					z.string(),
+					z.array(
+						z.object({
+							command: z.string(),
+							expect: z.string(),
+						})
+					)
+				),
+			})
+			.optional(),
+		plugins: z
+			.record(
+				z.string(),
+				z.object({
+					prefix: z.string().optional(),
+					options: z.record(z.string(), z.unknown()).optional(),
+				})
+			)
+			.optional(),
+	})
+	.strict();
+
+/**
+ * Validate raw config-file contents and report problems. Used by the
+ * `--check` doctor and at boot. Missing file → no issues. Invalid JSON
+ * or schema violations → human-readable issue strings.
+ */
+export const diagnoseConfigFile = (
+	raw: string | undefined
+): { readonly present: boolean; readonly issues: readonly string[] } => {
+	if (raw === undefined) return { present: false, issues: [] };
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(raw);
+	} catch (error) {
+		return {
+			present: true,
+			issues: [
+				`invalid JSON: ${error instanceof Error ? error.message : String(error)}`,
+			],
+		};
+	}
+	const result = CONFIG_FILE_SCHEMA.safeParse(parsed);
+	if (result.success) return { present: true, issues: [] };
+	return {
+		present: true,
+		issues: result.error.issues.map(
+			(issue) => `${issue.path.join('.') || '(root)'}: ${issue.message}`
+		),
+	};
+};
 
 /**
  * Parse a config file's raw contents. Pure and forgiving: missing

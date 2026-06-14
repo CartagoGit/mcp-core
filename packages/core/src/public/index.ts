@@ -95,6 +95,26 @@ export type {
 	IScaffoldToolOptions,
 } from '../lib/scaffold/scaffold-tool';
 
+// --- shared tool-response helpers (compact JSON + error envelope) ----------
+export {
+	toolJson,
+	toolOk,
+	toolError,
+} from '../lib/shared/tool-response';
+export type { IToolTextResult } from '../lib/shared/tool-response';
+
+// --- core meta-tools (overview / knowledge / validation matrix) ------------
+export { buildOverviewToolRegistration } from '../lib/tools/overview-tool';
+export type {
+	IOverviewSnapshot,
+	IOverviewToolEntry,
+	IOverviewPlugin,
+} from '../lib/tools/overview-tool';
+export { buildKnowledgeToolRegistration } from '../lib/tools/knowledge-tool';
+export { buildValidationMatrixToolRegistration } from '../lib/tools/validation-matrix-tool';
+export { buildKnowledgeResourceRegistrations } from '../lib/tools/knowledge-resources';
+export { buildStartPromptRegistration } from '../lib/tools/start-prompt';
+
 // --- hybrid project analyzer (bootstrap) -----------------------------------
 export {
 	analyzeProject,
