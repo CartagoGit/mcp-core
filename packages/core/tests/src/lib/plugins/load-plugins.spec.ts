@@ -14,6 +14,7 @@ const ctx = (name: string): IMcpPluginContext => ({
 	pluginCacheDir: `.cache/mcp-core/${name}`,
 	pluginDocsDir: `docs/mcp-core/${name}`,
 	namespacePrefix: name,
+	options: {},
 	args: {},
 });
 

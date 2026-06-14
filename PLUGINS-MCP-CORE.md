@@ -56,8 +56,20 @@ export default definePlugin({
 | `ctx.cacheDir` / `ctx.docsDir` | Shorthands for the above. |
 | `ctx.pluginCacheDir` | Your private scratch root: `<cacheDir>/<name>`. |
 | `ctx.pluginDocsDir` | Your docs root: `<docsDir>/<name>`. |
-| `ctx.namespacePrefix` | Tool namespace (default `name`, override with `--prefix-<name>`). |
-| `ctx.args` | Unrecognised `--key=value` CLI flags, forwarded for you to read. |
+| `ctx.namespacePrefix` | Tool namespace (default `name`, override with `plugins.<name>.prefix` in the config file). |
+| `ctx.options` | **Your typed options** from `mcp-core.config.json` → `plugins.<name>.options` (any JSON). Empty `{}` when absent. This is the structured way to receive values. |
+| `ctx.args` | Unrecognised global `--key=value` CLI flags, forwarded for you to read. |
+
+### Receiving values (`mcp-core.config.json`)
+
+Users pass values to your plugin through the config file at the workspace root:
+
+```jsonc
+{ "plugins": { "myfeature": { "prefix": "mf", "options": { "limit": 10, "paths": ["a", "b"] } } } }
+```
+
+Read them in `register` via `ctx.options.limit` etc. Validate them yourself
+(e.g. with zod) and apply defaults — treat `ctx.options` as untrusted JSON.
 
 ### What `register` returns (`IMcpPluginRegistrations`)
 

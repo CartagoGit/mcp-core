@@ -56,6 +56,15 @@ export {
 export type { ILoadedPlugin, IPluginLoadResult } from '../lib/plugins/load-plugins';
 export { parseCliArgs, DEFAULT_CLI_ARGS } from '../lib/plugins/parse-cli-args';
 export type { IMcpCoreCliArgs } from '../lib/plugins/parse-cli-args';
+export {
+	DEFAULT_CONFIG_FILENAME,
+	parseConfigFile,
+	pluginConfigFor,
+} from '../lib/plugins/load-config-file';
+export type {
+	IMcpCoreConfigFile,
+	IMcpCorePluginConfig,
+} from '../lib/plugins/load-config-file';
 
 // --- scaffolding kit ("tools to create tools/plugins") ---------------------
 export {

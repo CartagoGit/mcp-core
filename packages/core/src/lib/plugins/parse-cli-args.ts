@@ -19,8 +19,12 @@ export interface IMcpCoreCliArgs {
 	readonly serverVersion: string;
 	/** Core tool namespace (`--prefix`), optional. */
 	readonly namespacePrefix?: string | undefined;
+	/** Path to the config file (`--config`), optional (autodetected otherwise). */
+	readonly configPath?: string | undefined;
 	/** Any other `--key=value` flags, forwarded to plugins via ctx.args. */
 	readonly extra: Readonly<Record<string, string>>;
+	/** The raw tokenized flags, so callers can detect what was explicit. */
+	readonly tokens: Readonly<Record<string, string>>;
 }
 
 export const DEFAULT_CLI_ARGS = {
@@ -38,6 +42,7 @@ const KNOWN_KEYS = new Set([
 	'name',
 	'serverVersion',
 	'prefix',
+	'config',
 ]);
 
 /** Tokenize `--key=value`, `--key value` and `--flag` into a map. */
@@ -94,6 +99,8 @@ export const parseCliArgs = (
 		serverName: tokens['name'] ?? DEFAULT_CLI_ARGS.serverName,
 		serverVersion: tokens['serverVersion'] ?? DEFAULT_CLI_ARGS.serverVersion,
 		namespacePrefix: tokens['prefix'],
+		configPath: tokens['config'],
 		extra,
+		tokens,
 	};
 };

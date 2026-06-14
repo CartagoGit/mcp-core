@@ -49,8 +49,29 @@ scaffolding tools.
 | `--workspace=DIR` | current dir | Workspace root all paths resolve against. |
 | `--name=NAME` | `mcp-core` | Server name advertised over MCP. |
 | `--prefix=NS` | `mcpcore` | Namespace for the core's own tools (`<NS>_analyze_project`, …). |
-| `--prefix-<plugin>=NS` | plugin name | Override one plugin's tool namespace. |
+| `--config=FILE` | `mcp-core.config.json` | Config file with per-plugin values (see below). |
 | `--<anything>=value` | — | Forwarded to every plugin via `ctx.args`. |
+
+## Passing values to plugins — `mcp-core.config.json`
+
+For anything beyond the global roots, put a config file at the workspace root
+(or point at one with `--config`). Each plugin gets a typed `options` object
+(any JSON — nested objects, arrays…) and an optional tool-namespace `prefix`:
+
+```jsonc
+{
+	"cacheDir": ".cache/mcp-core",
+	"docsDir": "docs/mcp-core",
+	"plugins": {
+		"proposals": { "prefix": "work", "options": { "docsDir": "docs/x" } }
+	}
+}
+```
+
+Precedence for the shared roots is **explicit CLI flag > config file > default**.
+A plugin reads its entry as `ctx.options` (and its namespace as
+`ctx.namespacePrefix`). A missing or malformed file contributes nothing — it
+never crashes the server.
 
 ## Built-in tools (always available)
 

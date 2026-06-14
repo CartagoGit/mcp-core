@@ -426,6 +426,7 @@ export default definePlugin({
 												plugin: '${id}',
 												cacheDir: ctx.pluginCacheDir,
 												docsDir: ctx.pluginDocsDir,
+												options: ctx.options,
 											},
 											null,
 											'\\t'

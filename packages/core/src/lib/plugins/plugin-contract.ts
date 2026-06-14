@@ -32,7 +32,14 @@ export interface IMcpPluginContext {
 	readonly pluginDocsDir: string;
 	/** Tool namespace for this plugin (default: the plugin name). */
 	readonly namespacePrefix: string;
-	/** Extra CLI args not consumed by the core, e.g. `--proposalsDir=x`. */
+	/**
+	 * Typed, structured options for THIS plugin, read from the
+	 * `mcp-core.config.json` file under `plugins.<name>.options`. May
+	 * hold nested objects/arrays — anything JSON. Empty when no config
+	 * file (or no entry for this plugin) is present.
+	 */
+	readonly options: Readonly<Record<string, unknown>>;
+	/** Extra global CLI args not consumed by the core, e.g. `--foo=x`. */
 	readonly args: Readonly<Record<string, string>>;
 }
 
