@@ -38,12 +38,14 @@ export const buildSwarmPaths = (
 });
 
 /**
- * Default swarm layout for standalone use: cache under
- * `.cache/mcp-core/swarm`, proposals under `docs/mcp-core/proposals`.
- * Every value is overridable by passing a custom layout (or different
- * roots to `buildSwarmPaths`).
+ * Default proposals layout: cache/state under `.cache/mcp-core/proposals`,
+ * human-edited proposals under `docs/mcp-core/proposals`. Every engine in
+ * this package and the plugin's tools share this single layout, so locks,
+ * queue, round-context and the proposal store always agree on where state
+ * lives. Pass different roots to `buildSwarmPaths` for a custom layout
+ * (programmatic use).
  */
 export const DEFAULT_PATH_LAYOUT: IHostPathLayout = buildSwarmPaths(
-	'.cache/mcp-core/swarm',
+	'.cache/mcp-core/proposals',
 	'docs/mcp-core'
 );

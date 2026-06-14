@@ -31,6 +31,7 @@ describe('@cartago-git/mcp-proposals plugin', () => {
 			'task_queue',
 			'sync_proposals',
 			'get_proposal_workflow',
+			'round_context',
 		]);
 		expect(registrations.knowledge?.[0]?.id).toBe('proposals-workflow');
 	});
@@ -58,6 +59,7 @@ describe('@cartago-git/mcp-proposals plugin', () => {
 			'work_task_queue',
 			'work_sync_proposals',
 			'work_get_proposal_workflow',
+			'work_round_context',
 		]);
 	});
 });

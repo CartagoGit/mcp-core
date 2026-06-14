@@ -21,10 +21,10 @@ describe('buildSwarmPaths', () => {
 });
 
 describe('DEFAULT_PATH_LAYOUT', () => {
-	it('defaults cache under .cache/mcp-core/swarm and docs under docs/mcp-core', () => {
-		expect(DEFAULT_PATH_LAYOUT.scratchDir).toBe('.cache/mcp-core/swarm');
+	it('defaults cache under .cache/mcp-core/proposals and docs under docs/mcp-core', () => {
+		expect(DEFAULT_PATH_LAYOUT.scratchDir).toBe('.cache/mcp-core/proposals');
 		expect(DEFAULT_PATH_LAYOUT.lockFile).toBe(
-			'.cache/mcp-core/swarm/agents.lock.json'
+			'.cache/mcp-core/proposals/agents.lock.json'
 		);
 		expect(DEFAULT_PATH_LAYOUT.proposalsDir).toBe('docs/mcp-core/proposals');
 	});

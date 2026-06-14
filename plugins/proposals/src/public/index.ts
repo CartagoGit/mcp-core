@@ -20,6 +20,14 @@ export type { ISyncProposalsToolOptions } from '../lib/tools/sync-proposals.tool
 export { buildGetProposalWorkflowRegistration } from '../lib/tools/get-proposal-workflow.tool';
 export type { IGetProposalWorkflowToolOptions } from '../lib/tools/get-proposal-workflow.tool';
 export {
+	buildRoundContextRegistration,
+	buildRoundContextOutput,
+} from '../lib/tools/round-context.tool';
+export type {
+	IRoundContextToolOptions,
+	IRoundContextOutput,
+} from '../lib/tools/round-context.tool';
+export {
 	buildProposalWorkflow,
 } from '../lib/knowledge/proposal-workflow';
 export type { IProposalWorkflow } from '../lib/knowledge/proposal-workflow';

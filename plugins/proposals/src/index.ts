@@ -1,8 +1,9 @@
 import { definePlugin } from '@cartago-git/mcp-core/public';
 
-import { buildSwarmPaths } from './lib/contracts/constants/default-path-layout.constant';
+import { DEFAULT_PATH_LAYOUT } from './lib/contracts/constants/default-path-layout.constant';
 import { buildAgentLockRegistration } from './lib/tools/agent-lock.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
+import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
 import { buildSyncProposalsRegistration } from './lib/tools/sync-proposals.tool';
 import { buildTaskQueueRegistration } from './lib/tools/task-queue.tool';
 
@@ -26,7 +27,12 @@ export default definePlugin({
 	describe:
 		'Proposal store + file-level agent locks + persistent task queue (multi-agent swarm coordination).',
 	register(ctx) {
-		const layout = buildSwarmPaths(ctx.pluginCacheDir, ctx.docsDir);
+		// All path-bearing tools share ONE layout so locks, queue,
+		// round-context and the proposal store always agree. The engines
+		// in this package bake this same DEFAULT_PATH_LAYOUT, so the
+		// plugin uses it too (rather than ctx.pluginCacheDir) to stay
+		// coherent. Relocating it is programmatic (buildSwarmPaths).
+		const layout = DEFAULT_PATH_LAYOUT;
 		const abs = (relativePath: string): string =>
 			ctx.workspace.resolve(relativePath);
 
@@ -53,6 +59,12 @@ export default definePlugin({
 					proposalsDir: layout.proposalsDir,
 					indexFile: layout.proposalIndexFile,
 				}),
+				buildRoundContextRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRoot: ctx.workspace.root,
+					digestPathAbs: abs(layout.roundContextDigestFile),
+					coreDocs: ['README.md', layout.proposalIndexFile],
+				}),
 			],
 			knowledge: [
 				{
@@ -68,7 +80,7 @@ export default definePlugin({
 						'3. Release with `agent_lock` (action "release") when the slice closes.',
 						'4. Use `task_queue` (enqueue/dequeue/subscribe/report) only to coordinate parallel agents (waitFor / observe / backpressure).',
 						'',
-						`Cache/state lives under \`${ctx.pluginCacheDir}\`; proposal documents under \`${layout.proposalsDir}\`.`,
+						`Cache/state lives under \`${layout.scratchDir}\`; proposal documents under \`${layout.proposalsDir}\`.`,
 					].join('\n'),
 				},
 			],
