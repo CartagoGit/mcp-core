@@ -30,7 +30,7 @@ import { mkdir, rename, rm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import { resolveWorkspacePath } from '../shared/resolve-workspace-path';
-import { DEFAULT_PATH_LAYOUT } from '@cartago-git/mcp-core/public';
+import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import { CLOSED_CHECKPOINT_STATUSES } from './runtime-recovery';
 import type { ISubagentAssignment } from '../shared/subagent-registry-store';
 import { CONTINUITY_STALE_WINDOW_MS } from './runtime-recovery';

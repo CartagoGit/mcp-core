@@ -24,7 +24,7 @@
  * Skill: libs/mcp-server/src/lib/skills/affairs-delivery-verifier.md
  */
 
-import { DEFAULT_PATH_LAYOUT } from '@cartago-git/mcp-core/public';
+import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import { join } from 'node:path';
 
 import { z } from 'zod';

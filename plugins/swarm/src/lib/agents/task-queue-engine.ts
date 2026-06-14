@@ -20,7 +20,7 @@
  *     friendly message.
  */
 
-import { DEFAULT_PATH_LAYOUT } from '@cartago-git/mcp-core/public';
+import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import { mkdir } from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname } from 'node:path';

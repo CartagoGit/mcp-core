@@ -11,7 +11,7 @@ import {
 	isProposalContinuityPolicy,
 	isProposalSwarmBudget,
 } from './proposal-policy-guards';
-import { DEFAULT_PATH_LAYOUT } from '@cartago-git/mcp-core/public';
+import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 
 type IProposalStatus =
 	| 'pending'
