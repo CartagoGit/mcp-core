@@ -21,6 +21,13 @@ export interface IMcpCoreCliArgs {
 	readonly namespacePrefix?: string | undefined;
 	/** Path to the config file (`--config`), optional (autodetected otherwise). */
 	readonly configPath?: string | undefined;
+	/**
+	 * On first start, analyze the project and prepare a project-specific
+	 * MCP server blueprint. `--mcp-server-create=false` disables it.
+	 */
+	readonly mcpServerCreate: boolean;
+	/** Include tests in the blueprint. `--mcp-server-tests=false` to omit. */
+	readonly mcpServerTests: boolean;
 	/** Any other `--key=value` flags, forwarded to plugins via ctx.args. */
 	readonly extra: Readonly<Record<string, string>>;
 	/** The raw tokenized flags, so callers can detect what was explicit. */
@@ -45,7 +52,12 @@ const KNOWN_KEYS = new Set([
 	'config',
 	'check',
 	'doctor',
+	'mcp-server-create',
+	'mcp-server-tests',
 ]);
+
+const isFalse = (value: string | undefined): boolean =>
+	value === 'false' || value === '0' || value === 'no';
 
 /** Tokenize `--key=value`, `--key value` and `--flag` into a map. */
 const tokenize = (argv: readonly string[]): Record<string, string> => {
@@ -102,6 +114,8 @@ export const parseCliArgs = (
 		serverVersion: tokens['serverVersion'] ?? DEFAULT_CLI_ARGS.serverVersion,
 		namespacePrefix: tokens['prefix'],
 		configPath: tokens['config'],
+		mcpServerCreate: !isFalse(tokens['mcp-server-create']),
+		mcpServerTests: !isFalse(tokens['mcp-server-tests']),
 		extra,
 		tokens,
 	};

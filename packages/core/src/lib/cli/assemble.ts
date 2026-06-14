@@ -1,7 +1,12 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 
-import { buildBootstrapToolRegistrations } from '../bootstrap/index';
+import {
+	analyzeProject,
+	buildBootstrapToolRegistrations,
+	buildServerBlueprint,
+	createWorkspaceFileReader,
+} from '../bootstrap/index';
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
 import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
 import type { IMcpCoreHostConfig } from '../contracts/interfaces/host-config.interface';
@@ -269,6 +274,38 @@ export const runDoctor = async (
 	};
 };
 
+/**
+ * First-start hook: analyze the project and persist an EXHAUSTIVE
+ * blueprint for a project-specific MCP server to the cache, so an agent
+ * can review and materialise it. Idempotent (writes once) and never
+ * writes into the repo itself. Skipped by `--mcp-server-create=false`.
+ * If a server already exists, the blueprint's notes explain how to
+ * integrate it with mcp-core organically.
+ */
+export const prepareServerBlueprintOnStart = (
+	args: IMcpCoreCliArgs
+): { written: boolean; path: string } => {
+	const cacheDir = args.tokens['cacheDir'] ?? DEFAULT_CORE_PATHS.cacheDir;
+	const relPath = `${cacheDir.replace(/\/+$/, '')}/bootstrap/blueprint.json`;
+	const absPath = join(args.workspace, relPath);
+	if (existsSync(absPath)) return { written: false, path: relPath };
+	const reader = createWorkspaceFileReader({
+		root: args.workspace,
+		resolve: (rel) => join(args.workspace, rel),
+	});
+	const analysis = analyzeProject(reader);
+	const blueprint = buildServerBlueprint(analysis, {
+		tests: args.mcpServerTests,
+	});
+	mkdirSync(dirname(absPath), { recursive: true });
+	writeFileSync(
+		absPath,
+		`${JSON.stringify({ generatedAt: new Date().toISOString(), blueprint }, null, '\t')}\n`,
+		'utf8'
+	);
+	return { written: true, path: relPath };
+};
+
 /** Entry point for the `mcp-core` bin. */
 export const runCli = async (
 	argv: readonly string[],
@@ -282,6 +319,20 @@ export const runCli = async (
 		process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 		if (!report.ok) process.exitCode = 1;
 		return;
+	}
+
+	// First start: prepare the project-specific server blueprint.
+	if (args.mcpServerCreate) {
+		try {
+			const result = prepareServerBlueprintOnStart(args);
+			if (result.written) {
+				process.stderr.write(
+					`[mcp-core] wrote a project MCP server blueprint to ${result.path}; review it or call mcpcore_plan_mcp_server.\n`
+				);
+			}
+		} catch {
+			// best-effort; never block boot.
+		}
 	}
 
 	const { config, loadResult } = await assembleCliConfig(args);

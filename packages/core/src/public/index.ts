@@ -136,6 +136,8 @@ export {
 	PROJECT_PATTERN_CATALOG,
 	buildBootstrapToolRegistrations,
 	createWorkspaceFileReader,
+	buildServerBlueprint,
+	buildBlueprintFiles,
 } from '../lib/bootstrap/index';
 export type {
 	IProjectAnalysis,
@@ -143,4 +145,7 @@ export type {
 	IProjectPattern,
 	IFileReader,
 	IBootstrapToolOptions,
+	IServerBlueprint,
+	IBlueprintArtifact,
+	IBlueprintOptions,
 } from '../lib/bootstrap/index';

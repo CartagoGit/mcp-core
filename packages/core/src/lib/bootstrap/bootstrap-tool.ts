@@ -11,6 +11,10 @@ import {
 } from '../scaffold/scaffold-host';
 import { analyzeProject } from './analyze-project';
 import type { IFileReader } from './analyze-project';
+import {
+	buildBlueprintFiles,
+	buildServerBlueprint,
+} from './build-blueprint';
 import { recommendServerPlan } from './recommend-plan';
 
 export interface IBootstrapToolOptions {
@@ -164,5 +168,46 @@ export const buildBootstrapToolRegistrations = (
 		},
 	};
 
-	return [analyze, create];
+	const planServer: IToolRegistration = {
+		id: 'plan_mcp_server',
+		summary:
+			'EXHAUSTIVE plan for a project-specific MCP server (all tools/prompts/skills/agents + tests) and the files to write.',
+		tags: ['bootstrap'],
+		register: async (server) => {
+			server.registerTool(
+				`${prefix}_plan_mcp_server`,
+				{
+					description:
+						'Read-only. Analyze this project and return an EXHAUSTIVE blueprint for a project-specific MCP server — every tool, prompt, skill and agent worth creating (with tests by default), plus the files to write. If a server already exists, the notes explain how to integrate it with mcp-core instead of replacing it.',
+					inputSchema: z.object({
+						tests: z.boolean().optional(),
+						namespacePrefix: z.string().optional(),
+						serverName: z.string().optional(),
+					}),
+				},
+				async (args: {
+					tests?: boolean | undefined;
+					namespacePrefix?: string | undefined;
+					serverName?: string | undefined;
+				}) => {
+					const analysis = analyzeProject(reader);
+					const blueprint = buildServerBlueprint(analysis, {
+						...(args.tests !== undefined ? { tests: args.tests } : {}),
+						...(args.namespacePrefix !== undefined
+							? { namespacePrefix: args.namespacePrefix }
+							: {}),
+						...(args.serverName !== undefined
+							? { serverName: args.serverName }
+							: {}),
+					});
+					return json({
+						blueprint,
+						files: buildBlueprintFiles(blueprint),
+					});
+				}
+			);
+		},
+	};
+
+	return [analyze, planServer, create];
 };

@@ -9,6 +9,17 @@ describe('parseCliArgs', () => {
 		expect(args.cacheDir).toBe('.cache/mcp-core');
 		expect(args.docsDir).toBe('docs/mcp-core');
 		expect(args.workspace).toBe('/cwd');
+		expect(args.mcpServerCreate).toBe(true);
+		expect(args.mcpServerTests).toBe(true);
+	});
+
+	it('parses --mcp-server-create=false and --mcp-server-tests=false', () => {
+		const args = parseCliArgs(
+			['--mcp-server-create=false', '--mcp-server-tests=false'],
+			'/cwd'
+		);
+		expect(args.mcpServerCreate).toBe(false);
+		expect(args.mcpServerTests).toBe(false);
 	});
 
 	it('parses --plugins as a comma list and overrides dirs', () => {
