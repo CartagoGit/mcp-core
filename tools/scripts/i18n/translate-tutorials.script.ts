@@ -50,8 +50,7 @@ const LANGS_DISPLAY: Readonly<Record<(typeof LANGS)[number], string>> = {
 	th: 'ไทย',
 };
 
-/** Recursive walk that mirrors `find plugins -path '*/ tutorials /
-	en; /*.md' -type f`. */
+/** Recursive walk that mirrors `find plugins -path ...tutorials.en...md -type f`. */
 const findEnTutorials = async (root: string): Promise<readonly string[]> => {
 	const out: string[] = [];
 	const entries = await readdir(root, { withFileTypes: true }).catch(
